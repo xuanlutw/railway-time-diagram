@@ -27,4 +27,5 @@ export const train_types = derived(
 );
 
 // Train Infos
-export const trains = writable([] as Train[]);
+export const trains          = writable([] as Train[]);
+export const focus_train_num = writable(-1);

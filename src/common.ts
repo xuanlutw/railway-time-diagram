@@ -38,3 +38,5 @@ export type Line = {
     stations:    Station[],
     train_types: Train_type[]
 }
+
+export type Control = "D"| "T"| "S"| "N";

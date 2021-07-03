@@ -1,6 +1,6 @@
-import {get}                   from 'svelte/store';
-import {stations, train_types} from './store';
-import type {Tick, HM}         from './common';
+import {get}                    from 'svelte/store';
+import {stations, train_types}  from './store';
+import type {Tick, HM, Control} from './common';
 
 export class Train {
     private type:        number;
@@ -13,7 +13,7 @@ export class Train {
     private stop_t:      Tick[];
 
     color:  string;
-    coords: {"t": Tick, "d": HM}[];
+    coords: {"t": Tick, "d": HM, "c": Control, "idx": number}[];
 
     constructor (type:        number,
                  dep_station: number,
@@ -34,17 +34,25 @@ export class Train {
         this.compute_coords();
     }
 
+    flip_stop(idx: number):void {
+        this.stops[idx] = !this.stops[idx];
+        this.compute_coords();
+    }
+
     compute_coords(): void {
         this.coords       = [];
         let tick_count    = this.dep_t;
-        const coords_push = (x: HM) => this.coords.push({"t": tick_count, "d": x});
+        const coords_push = (idx: number, c: Control) => this.coords.push({"t": tick_count, "d": get(stations)[idx].dist, "c": c, "idx": idx});
 
         if (this.direction) {
             for (let idx = this.dep_station; idx < this.arr_station; ++idx) {
                 // Stop time
-                if (idx != this.dep_station && this.stops[idx])
+                if (idx == this.dep_station)
+                    coords_push(idx, "D");
+                else if (this.stops[idx]) {
                     tick_count += this.stop_t[idx];
-                coords_push(get(stations)[idx].dist);
+                    coords_push(idx, "T");
+                }
                 // Btw time
                 let speed: number;
                 if (this.stops[idx] && this.stops[idx + 1])
@@ -56,15 +64,18 @@ export class Train {
                 else
                     speed = get(train_types)[this.type].speed_pp[idx];
                 tick_count += (get(stations)[idx + 1].dist - get(stations)[idx].dist) / speed;
-                coords_push(get(stations)[idx + 1].dist);
+                coords_push(idx + 1, this.stops[idx]? "S": "N");
             }
         }
         else {
             for (let idx = this.dep_station; idx > this.arr_station; --idx) {
                 // Stop time
-                if (idx != this.dep_station && this.stops[idx])
+                if (idx == this.dep_station)
+                    coords_push(idx, "D");
+                else if (this.stops[idx]) {
                     tick_count += this.stop_t[idx];
-                coords_push(get(stations)[idx].dist);
+                    coords_push(idx, "T");
+                }
                 // Btw time
                 let speed: number;
                 if (this.stops[idx] && this.stops[idx - 1])
@@ -76,7 +87,7 @@ export class Train {
                 else
                     speed = get(train_types)[this.type].speed_pp[idx - 1];
                 tick_count += (get(stations)[idx].dist - get(stations)[idx - 1].dist) / speed;
-                coords_push(get(stations)[idx - 1].dist);
+                coords_push(idx - 1, this.stops[idx]? "S": "N");
             }
         }
     }
