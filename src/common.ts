@@ -17,12 +17,24 @@ export type HM = number;
 // Station
 export type Station = {
     name:       string,
-    distance:   HM,
+    dist:       HM,
     n_track_in: number,
     n_track_to: number
 };
 
-export type Line = {
+// Train_type
+export type Train_type = {
     name:     string,
-    stations: Station[]
+    color:    string,
+    speed_pp: number[], // Pass and Stop, 4.16 HM/tick = 100 kmh
+    speed_ps: number[], // Pass and Stop
+    speed_sp: number[], // Pass and Stop
+    speed_ss: number[], // Pass and Stop
+    stop_t:   number[]
+}
+
+export type Line = {
+    name:        string,
+    stations:    Station[],
+    train_types: Train_type[]
 }

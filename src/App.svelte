@@ -1,9 +1,9 @@
 <script lang="ts">
-    import {line_info} from './store';
+    import {line_name} from './store';
     import Render      from './Render.svelte';
 </script>
 
-<h1> {$line_info.name}各級列車 </h1>
+<h1> {$line_name}各級列車 </h1>
 <Render />
 
 <style>
