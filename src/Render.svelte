@@ -4,8 +4,9 @@
     import {stations, train_types, trains, focus_train_num} from './store';
     import { Train }                                        from './train';
 
-    const tick2pt = (x: Tick) => x * 4;
-    const hm2pt   = (x: HM)   => x * 1;
+    const tick2pt = (x: Tick)   => x * 5;
+    const pt2tick = (x: number) => x / 5;
+    const hm2pt   = (x: HM)     => x * 1;
 
     const width   = 1200;
     const width0  = 50;
@@ -37,6 +38,34 @@
                     });
     }
 
+    let x_now: number;
+    let x_o:   number;
+    let idx_o: number = -1;
+    let c_o:   Control;
+
+    function drag_start (event: any, c: Control, idx: number): void {
+        x_o   = event.x;
+        c_o   = c;
+        idx_o = idx;
+    }
+
+    function drag_end (event: any): void {
+        if (idx_o >= 0 && Math.abs(event.x - x_o) > 5) {
+            console.log(event.x - x_o, idx_o);
+            trains.update(x => {
+                    x[$focus_train_num].set_time(idx_o, pt2tick(event.x - x_o));
+                    return x;
+                    });
+        }
+        if (Math.abs(event.x - x_o) > 5)
+            idx_o = -1;
+    }
+
+    function mouse_position_handler (event: any): void {
+        x_now = event.x;
+    }
+    
+
     $: if ($train_types.length > 0) {
         console.log($train_types);
         trains.update(x => {
@@ -51,7 +80,9 @@
     }
 </script>
 
-<div on:wheel={wheel_handler}>
+<div on:wheel={wheel_handler}
+     on:click={drag_end}
+     on:mousemove={mouse_position_handler}>
     <svg width={width + width0 + 2 * margin} height={height + height0 + height1 + 2 * margin}
          viewBox={`${-margin} ${-margin} ${width + width0 + 2 * margin} ${height + height0 + height1 + 2 * margin}`}>
 
@@ -96,11 +127,30 @@
                       x2={width0  + tick2pt(item.t - view_tick)}
                       y2={height0 + height + height1}
                       stroke="#888888" stroke-width={grid_ws} stroke-dasharray="5"/>
-                <circle cx={width0  + tick2pt(item.t - view_tick)}
-                        cy={height0 + height + height1}
-                        r=8 stroke="black" stroke-width="1" fill="#FFCCCC" 
-                        on:click={()=>click_handler(item.c, item.idx)} />
+                {#if item.c == "S" || item.c == "N"}
+                    <circle cx={width0  + tick2pt(item.t - view_tick)}
+                            cy={height0 + height + height1}
+                            r=8 stroke="black" stroke-width="1" fill="#FFCCCC" 
+                            on:click={()=>click_handler(item.c, item.idx)} />
+                {:else}
+                    <circle cx={width0  + tick2pt(item.t - view_tick)}
+                            cy={height0 + height + height1}
+                            r=8 stroke="black" stroke-width="1" fill="#CCFFCC" 
+                            on:click={(event) => drag_start(event, item.c, item.idx)} />
+                {/if}
             {/each}
+        {/if}
+        
+        <!-- Mouse Focus -->
+        {#if idx_o >= 0}
+            <line x1={x_now - margin}
+                  y1={height0}
+                  x2={x_now - margin}
+                  y2={height0 + height + height1}
+                  stroke="#888888" stroke-width={grid_ws} stroke-dasharray="5"/>
+            <circle cx={x_now - margin}
+                    cy={height0 + height + height1}
+                    r=8 stroke="black" stroke-width="1" fill="#CCCCFF" />
         {/if}
 
         <!-- Mask -->

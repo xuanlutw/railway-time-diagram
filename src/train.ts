@@ -39,6 +39,14 @@ export class Train {
         this.compute_coords();
     }
 
+    set_time(idx: number, delta: Tick): void {
+        if (idx == this.dep_station)
+            this.dep_t += delta;
+        else
+            this.stop_t[idx] += delta;
+        this.compute_coords();
+    }
+
     compute_coords(): void {
         this.coords       = [];
         let tick_count    = this.dep_t;
