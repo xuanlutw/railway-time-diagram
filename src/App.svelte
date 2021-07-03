@@ -1,7 +1,9 @@
 <script lang="ts">
-    import Render from './Render.svelte';
+    import {line_info} from './store';
+    import Render      from './Render.svelte';
 </script>
 
+<h1> {$line_info.name}各級列車 </h1>
 <Render />
 
 <style>

@@ -14,4 +14,15 @@ export function tick2hr (tick: Tick): number {
 // All variable with type HM should be integer
 export type HM = number;
 
+// Station
+export type Station = {
+    name:       string,
+    distance:   HM,
+    n_track_in: number,
+    n_track_to: number
+};
 
+export type Line = {
+    name:     string,
+    stations: Station[]
+}
