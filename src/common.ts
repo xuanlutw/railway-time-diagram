@@ -2,12 +2,15 @@
 // All variable with type Tick should be integer
 export type Tick = number;
 
+export function tick2sec (tick: Tick): number {
+    return (tick % 4) * 15;
+};
 export function tick2min (tick: Tick): number {
-    return ((tick % 240) - (tick % 4)) / 4
+    return ((tick % 240) - (tick % 4)) / 4;
 };
 
 export function tick2hr (tick: Tick): number {
-    return (tick - (tick % 240)) / 240
+    return (tick - (tick % 240)) / 240;
 };
 
 // HM is the length quant in this project, 1 HM = 100 meter.
@@ -39,4 +42,4 @@ export type Line = {
     train_types: Train_type[]
 }
 
-export type Control = "D"| "T"| "S"| "N";
+export type Control = "D"| "T"| "C"| "S"| "N";

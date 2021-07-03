@@ -12,15 +12,20 @@ export class Train {
     private dep_t:       Tick
     private stop_t:      Tick[];
 
-    color:  string;
-    coords: {"t": Tick, "d": HM, "c": Control, "idx": number}[];
+    name:      string;
+    type_name: string;
+    color:     string;
+    coords:    {"t": Tick, "d": HM, "c": Control, "idx": number}[];
 
-    constructor (type:        number,
+    constructor (name:        string,
+                 type:        number,
                  dep_station: number,
                  arr_station: number,
                  stops:       boolean[],
                  dep_t:       Tick) {
+        this.name        = name;
         this.type        = type;
+        this.type_name   = get(train_types)[type].name;
         this.dep_station = dep_station;
         this.arr_station = arr_station;
         this.direction   = dep_station < arr_station? true: false;
@@ -28,7 +33,7 @@ export class Train {
         this.stops[dep_station] = true;
         this.stops[arr_station] = true;
         this.dep_t       = dep_t;
-        this.stop_t      = get(train_types)[type].stop_t;
+        this.stop_t      = [...get(train_types)[type].stop_t];
 
         this.color       = get(train_types)[type].color;
         this.compute_coords();
@@ -42,8 +47,12 @@ export class Train {
     set_time(idx: number, delta: Tick): void {
         if (idx == this.dep_station)
             this.dep_t += delta;
-        else
-            this.stop_t[idx] += delta;
+        else {
+            if (this.stop_t[idx] + delta >= get(train_types)[this.type].stop_t[idx])
+                this.stop_t[idx] += delta;
+            else
+                this.stop_t[idx] = get(train_types)[this.type].stop_t[idx];
+        }
         this.compute_coords();
     }
 
@@ -71,8 +80,8 @@ export class Train {
                     speed = get(train_types)[this.type].speed_ps[idx];
                 else
                     speed = get(train_types)[this.type].speed_pp[idx];
-                tick_count += (get(stations)[idx + 1].dist - get(stations)[idx].dist) / speed;
-                coords_push(idx + 1, this.stops[idx]? "S": "N");
+                tick_count += Math.round((get(stations)[idx + 1].dist - get(stations)[idx].dist) / speed);
+                coords_push(idx + 1, this.stops[idx + 1]? "S": "N");
             }
         }
         else {
@@ -94,8 +103,8 @@ export class Train {
                     speed = get(train_types)[this.type].speed_ps[idx - 1];
                 else
                     speed = get(train_types)[this.type].speed_pp[idx - 1];
-                tick_count += (get(stations)[idx].dist - get(stations)[idx - 1].dist) / speed;
-                coords_push(idx - 1, this.stops[idx]? "S": "N");
+                tick_count += Math.round((get(stations)[idx].dist - get(stations)[idx - 1].dist) / speed);
+                coords_push(idx - 1, this.stops[idx - 1]? "S": "N");
             }
         }
     }
