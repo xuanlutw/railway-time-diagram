@@ -13,13 +13,7 @@
     const height  = 500;
     const height0 = 60;
     const height1 = 40;
-    const margin  = 20;
-
-    const box_w   = 6;
-    const grid_wb = 2;
-    const grid_ws = 1;
-    const train_w = 1.5;
-    const train_wf= 3;
+    const margin  = 10;
 
     let view_tick = 1440;
     let view_hm   = 0;
@@ -29,6 +23,11 @@
         view_tick += event.deltaX;
         view_hm   += event.deltaY / 10;
     }
+
+    let control_items: {"t": Tick, "d": HM, "c": Control, "idx": number}[];
+    $: control_items = ($focus_train_num < 0)? []: $trains[$focus_train_num].coords
+        .map(x => (x.t == t_o)? {"t": t_n, "d": x.d, "c": <Control>"C", "idx": x.idx}: x)
+        .filter((x, idx, arr) => (idx < arr.length - 1) && (x.t >= view_tick) && (tick2pt(x.t - view_tick) <= width))
 
     let x_n:   number;
     let x_o:   number;
@@ -107,116 +106,119 @@
                 <polygon class="st3" points="17.24,11.56 13.11,11.56 13.11,5.02 17.24,5.02 17.24,1.34 23.32,8.04 17.24,14.75 	"/>
                 <path d="M17.74,2.64l4.91,5.41l-4.91,5.41v-1.39v-1h-1h-3.13V5.52h3.13h1v-1V2.64 M16.74,0.04v4.47h-4.13v7.55h4.13v3.98l7.26-8 L16.74,0.04L16.74,0.04z"/>
             </g>
+            <g id="icon_shiftc">
+                <polygon class="st4" points="1.29,8 7.37,1.29 7.37,4.97 11.5,4.97 11.5,11.52 7.37,11.52 7.37,14.71 	"/>
+                <path d="M6.87,2.59v1.88v1h1H11v5.55H7.87h-1v1v1.39L1.96,8L6.87,2.59 M7.87,0L0.61,8l7.26,8v-3.98H12V4.47H7.87V0L7.87,0z"/>
+                <polygon class="st4" points="17.24,11.56 13.11,11.56 13.11,5.02 17.24,5.02 17.24,1.34 23.32,8.04 17.24,14.75 	"/>
+                <path d="M17.74,2.64l4.91,5.41l-4.91,5.41v-1.39v-1h-1h-3.13V5.52h3.13h1v-1V2.64 M16.74,0.04v4.47h-4.13v7.55h4.13v3.98l7.26-8 L16.74,0.04L16.74,0.04z"/>
+            </g>
         </defs>
 
-        <!-- Time grid -->
-        {#each [...Array(5760).keys()] as t}
-            {#if t % 40 == 0 && t >= view_tick && tick2pt(t - view_tick) < width}
-                <line x1={width0 + tick2pt(t - view_tick)} y1={height0}
-                      x2={width0 + tick2pt(t - view_tick)} y2={height0 + height}
-                      stroke="#CCCCCC" stroke-width={(t % 240)? grid_ws: grid_wb}/>
-            {/if}
+        <!-- Grids -->
+        {#each (new Array(144)).map(x => x * 40).filter(x => x >= view_tick && tick2pt(x - view_tick) < width) as t}
+            <line class={(t % 240)? "grid": "gridb"}
+                x1={width0 + tick2pt(t - view_tick)} y1={height0}
+                x2={width0 + tick2pt(t - view_tick)} y2={height0 + height} />
         {/each}
-
-        <!-- Station grid -->
-        {#each $stations as s}
-            {#if s.dist >= view_hm && hm2pt(s.dist - view_hm) < height}
-                <line x1={width0}         y1={height0 + hm2pt(s.dist - view_hm)}
-                      x2={width0 + width} y2={height0 + hm2pt(s.dist - view_hm)}
-                      stroke="#CCCCCC" stroke-width={grid_wb}/>
-            {/if}
+        {#each $stations.filter(x => x.dist >= view_hm && hm2pt(x.dist - view_hm) < height) as s}
+            <line class=grid
+                x1={width0}         y1={height0 + hm2pt(s.dist - view_hm)}
+                x2={width0 + width} y2={height0 + hm2pt(s.dist - view_hm)} />
         {/each}
-
+ 
         <!-- Trains -->
-        {#each $trains as train, n}
-            {#each [...Array(train.coords.length - 1).keys()] as idx}
-                {#if n == $focus_train_num}
-                    <line x1={width0  + tick2pt(train.coords[idx].t     - view_tick)}
-                          y1={height0 +   hm2pt(train.coords[idx].d     - view_hm)}
-                          x2={width0  + tick2pt(train.coords[idx + 1].t - view_tick)}
-                          y2={height0 +   hm2pt(train.coords[idx + 1].d - view_hm)}
-                          stroke="#FFDFBD" stroke-width={3 * train_wf} opacity="0.4"/>
-                    <line x1={width0  + tick2pt(train.coords[idx].t     - view_tick)}
-                          y1={height0 +   hm2pt(train.coords[idx].d     - view_hm)}
-                          x2={width0  + tick2pt(train.coords[idx + 1].t - view_tick)}
-                          y2={height0 +   hm2pt(train.coords[idx + 1].d - view_hm)}
-                          stroke="#F8DFBD" stroke-width={4 * train_wf} opacity="0.3"/>
-                    <line x1={width0  + tick2pt(train.coords[idx].t     - view_tick)}
-                          y1={height0 +   hm2pt(train.coords[idx].d     - view_hm)}
-                          x2={width0  + tick2pt(train.coords[idx + 1].t - view_tick)}
-                          y2={height0 +   hm2pt(train.coords[idx + 1].d - view_hm)}
-                          stroke="#F0DFBD" stroke-width={5 * train_wf} opacity="0.2"/>
-                {/if}
-                <line x1={width0  + tick2pt(train.coords[idx].t     - view_tick)}
-                      y1={height0 +   hm2pt(train.coords[idx].d     - view_hm)}
-                      x2={width0  + tick2pt(train.coords[idx + 1].t - view_tick)}
-                      y2={height0 +   hm2pt(train.coords[idx + 1].d - view_hm)}
-                      stroke={train.color} stroke-width={(n == $focus_train_num)? train_wf: train_w}/>
-            {/each}
+        {#each $trains as train}
+            <path class=train
+                d={train.coords.reduce((acc, x, idx) =>
+                        acc + `${idx == 0? "M": "L"}
+                               ${width0 + tick2pt(x.t - view_tick)}
+                               ${height0 + hm2pt(x.d - view_hm)}`, "")}
+                stroke={train.color} />
         {/each}
+
+        <!-- Train highlight -->
+        {#if $focus_train_num >= 0}
+            <defs>
+                <g id="focus_train">
+                    <path d={$trains[$focus_train_num].coords.reduce((acc, x, idx) =>
+                            acc + `${idx == 0? "M": "L"}
+                                   ${width0 + tick2pt(x.t - view_tick)}
+                                   ${height0 + hm2pt(x.d - view_hm)}`, "")} />
+                </g>
+            </defs>
+            <use class=hh1 href="#focus_train" />
+            <use class=hh2 href="#focus_train" />
+            <use class=hh3 href="#focus_train" />
+            <use class=train href="#focus_train" stroke={$trains[$focus_train_num].color} />
+        {/if}
 
         <!-- Mask -->
-        <rect x={-margin} y={height + height0} 
-              width={width0 + width + 2 * margin} height={height1 + margin} fill="#FFFFFF" />
-        <rect x={-margin} y={-margin} 
-              width={width0 + width + 2 * margin} height={height0 + margin} fill="#FFFFFF" />
-        <rect x={-margin} y={-margin} 
-              width={width0 + margin}             height={height0 + height + height1 + 2 * margin} fill="#FFFFFF" />
-        <rect x={width + width0} y={-margin} 
-              width={margin}                      height={height0 + height + height1 + 2 * margin} fill="#FFFFFF" />
+        <rect class=mask x={-margin} y={height + height0} 
+              width={width0 + width + 2 * margin}
+              height={height1 + margin} />
+        <rect class=mask x={-margin} y={-margin} 
+              width={width0 + width + 2 * margin}
+              height={height0 + margin} />
+        <rect class=mask x={-margin} y={-margin} 
+              width={width0 + margin}
+              height={height0 + height + height1 + 2 * margin} />
+        <rect class=mask x={width + width0} y={-margin} 
+              width={margin} 
+              height={height0 + height + height1 + 2 * margin} />
 
         <!-- Control Line -->
-        {#if $focus_train_num >= 0}
-            {#each $trains[$focus_train_num].coords.map(x => (x.t == t_o)? {"t": t_n, "d": x.d, "c": "C", "idx": x.idx}: x).filter((x, idx, arr) => (idx < arr.length - 1) && (x.t >= view_tick) && (tick2pt(x.t - view_tick) <= width)) as item}
-                <line x1={width0  + tick2pt(item.t - view_tick)}
-                      y1={height0 / ((item.c == "S" || item.c == "N")? 3: 1.5)}
-                      x2={width0  + tick2pt(item.t - view_tick)}
-                      y2={height0 + height + height1 / ((item.c == "S" || item.c == "N")? 3: 1.5)}
-                      stroke="#888888" stroke-width={grid_ws} stroke-dasharray="5"/>
-                <text x={width0 + tick2pt(item.t - view_tick)}
-                      y={height0 / ((item.c == "S" || item.c == "N")? 3: 1.5)} >
-                      {tick2min(item.t).toString().padStart(2, "0") + "." +
-                       tick2sec(item.t).toString().padStart(2, "0")} </text>
-                <use href={item.c == "N"? "#icon_plus": item.c == "S"? "#icon_minus": "#icon_shift"}
-                     x={width0 + tick2pt(item.t - view_tick) - ((item.c == "N" || item.c == "S")? 8: 12)}
-                     y={height0 + height + height1 / ((item.c == "S" || item.c == "N")? 3: 1.5) - 8}
-                     on:click={(event)=>click_handler(event, item.t, item.c, item.idx)} />
-            {/each}
-        {/if}
+        {#each control_items as item}
+            <line class=control
+                  x1={width0  + tick2pt(item.t - view_tick)}
+                  y1={height0 / ((item.c == "S" || item.c == "N")? 3: 1.5)}
+                  x2={width0  + tick2pt(item.t - view_tick)}
+                  y2={height0 + height + height1 / ((item.c == "S" || item.c == "N")? 3: 1.5)} />
+            <text x={width0 + tick2pt(item.t - view_tick)}
+                  y={height0 / ((item.c == "S" || item.c == "N")? 3: 1.5)} >
+                  {tick2min(item.t).toString().padStart(2, "0") + "." +
+                   tick2sec(item.t).toString().padStart(2, "0")} </text>
+            <use href={item.c == "N"? "#icon_plus": item.c == "S"? "#icon_minus": item.c == "C"? "#icon_shiftc": "#icon_shift"}
+                 x={width0 + tick2pt(item.t - view_tick) - ((item.c == "N" || item.c == "S")? 8: 12)}
+                 y={height0 + height + height1 / ((item.c == "S" || item.c == "N")? 3: 1.5) - 8}
+                 on:click={(event)=>click_handler(event, item.t, item.c, item.idx)} />
+        {/each}
         
         <!-- Labels -->
-        {#each [...Array(5760).keys()] as t}
-            {#if t % 40 == 0 && t >= view_tick && tick2pt(t - view_tick) < width}
-                <text x={width0 + tick2pt(t - view_tick)} y={height0 - box_w}> 
-                      {(t % 240)? tick2min(t).toString().padStart(2, "0"): 
-                                  tick2hr(t).toString().padStart(2, "0") + "00"} </text>
-            {/if}
+        {#each (new Array(144)).map(x => x * 40).filter(x => x >= view_tick && tick2pt(x - view_tick) < width) as t}
+            <text x={width0 + tick2pt(t - view_tick)} y={height0 - 6}> 
+                  {(t % 240)? tick2min(t).toString().padStart(2, "0"): 
+                               tick2hr(t).toString().padStart(2, "0") + "00"}
+            </text>
         {/each}
-        {#each $stations as s}
-            {#if s.dist >= view_hm && hm2pt(s.dist - view_hm) < height}
-                <text x=0 y={height0 + hm2pt(s.dist - view_hm)}> {s.name} </text>
-            {/if}
+        {#each $stations.filter(x => x.dist >= view_hm && hm2pt(x.dist - view_hm) < height) as s}
+            <text x=0 y={height0 + hm2pt(s.dist - view_hm)}> {s.name} </text>
         {/each}
 
         <!-- Outer box --->
-        <line x1={width0 - box_w / 2}         y1={height0}        
-              x2={width0 + width + box_w / 2} y2={height0}
-              stroke="#CCCCCC" stroke-width={box_w}/>
-        <line x1={width0 + width}             y1={height0 + height + box_w / 2} 
-              x2={width0 + width}             y2={height0 - box_w / 2}
-              stroke="#CCCCCC" stroke-width={box_w}/>
-        <line x1={width0 + width + box_w / 2} y1={height0 + height} 
-              x2={width0 - box_w / 2}         y2={height0 + height}
-              stroke="#CCCCCC" stroke-width={box_w}/>
-        <line x1={width0}                     y1={height0 - box_w / 2}        
-              x2={width0}                     y2={height0 + height + box_w / 2}
-              stroke="#CCCCCC" stroke-width={box_w}/>
+        <path class="border" d=
+           {`M ${width0}         ${height0}        
+             L ${width0 + width} ${height0}
+             L ${width0 + width} ${height0 + height} 
+             L ${width0}         ${height0 + height} Z`} />
     </svg>
 </div>
 
-<style type="text/css">
+<style>
 	.st0{fill:#F19483;}
 	.st1{fill:#A8D8B9;}
 	.st2{fill:#FFFFFF;}
 	.st3{fill:#9B90C2;}
+	.st4{fill:#9BF0FF;}
+
+    .border {stroke:#CCCCCC; stroke-width:6; fill:none;}
+    .grid   {stroke:#CCCCCC; stroke-width:1;}
+    .gridb  {stroke:#CCCCCC; stroke-width:2;}
+    .control{stroke:#888888; stroke-width:1; stroke-dasharray:5;}
+    .mask   {fill:#FFFFFF;}
+
+    .train  {stroke-width:2; fill:none;}
+
+    .hh1    {stroke:#F0DFBD; stroke-width:16; opacity:0.2; fill:none;}
+    .hh2    {stroke:#E0CFAD; stroke-width:13;  opacity:0.4; fill:none;}
+    .hh3    {stroke:#D0BF9D; stroke-width:10;  opacity:0.6; fill:none;}
 </style>
