@@ -2,6 +2,7 @@
     import {tick2sec, tick2min, tick2hr}                                from './common';
     import type {Tick, HM, Control}                                     from './common';
     import {stations, train_types, trains, focus_train_num, tick_range} from './store';
+    import {inter_conflict} from './store';
     import {Train}                                                      from './train';
 
     let tickpt_r  = 5;
@@ -88,6 +89,7 @@
                 return x});
         focus_train_num.update(_ => 0);
     }
+
 </script>
 
 <svelte:window bind:innerWidth={w_width}
@@ -126,6 +128,15 @@
                 <path d="M17.74,2.64l4.91,5.41l-4.91,5.41v-1.39v-1h-1h-3.13V5.52h3.13h1v-1V2.64 M16.74,0.04v4.47h-4.13v7.55h4.13v3.98l7.26-8 L16.74,0.04L16.74,0.04z"/>
             </g>
         </defs>
+
+        <!-- Conflicts -->
+        {#each $inter_conflict as item}
+            <rect class=inter_conflict
+                  x={width0 + tick2pt(item.tick1 - view_tick)}
+                  y={height0 + hm2pt($stations[item.idx].dist - view_hm)} 
+                  width={tick2pt(item.tick2 - item.tick1)}
+                  height={hm2pt($stations[item.idx + 1].dist - $stations[item.idx].dist)} />
+        {/each}
 
         <!-- Grids -->
         {#each [...Array(144).keys()].map(x => x * 40).filter(x => x >= view_tick && tick2pt(x - view_tick) < width) as t}
@@ -230,6 +241,8 @@
     .train  {stroke-width:2; fill:none;}
 
     .hh1    {stroke:#F0DFBD; stroke-width:16; opacity:0.2; fill:none;}
-    .hh2    {stroke:#E0CFAD; stroke-width:13;  opacity:0.4; fill:none;}
-    .hh3    {stroke:#D0BF9D; stroke-width:10;  opacity:0.6; fill:none;}
+    .hh2    {stroke:#E0CFAD; stroke-width:13; opacity:0.4; fill:none;}
+    .hh3    {stroke:#D0BF9D; stroke-width:10; opacity:0.6; fill:none;}
+
+    .inter_conflict {fill:#FF0000; opacity:0.5;}
 </style>
