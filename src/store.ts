@@ -1,5 +1,5 @@
 import { readable, writable, derived } from 'svelte/store';
-import type {Line}                     from "./common";
+import type {Tick, Line}               from "./common";
 import { Train }                       from './train';
 
 // Const Meta Infos
@@ -27,5 +27,8 @@ export const train_types = derived(
 );
 
 // Train Infos
-export const trains          = writable([] as Train[]);
+export const trains          = writable(<Train[]>[]);
 export const focus_train_num = writable(-1);
+
+// Window Infos
+export const tick_range = writable(<Tick[]>[500, 1000]);

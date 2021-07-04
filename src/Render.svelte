@@ -1,22 +1,26 @@
 <script lang="ts">
-    import {tick2sec, tick2min, tick2hr}                    from './common';
-    import type {Tick, HM, Control}                         from './common';
-    import {stations, train_types, trains, focus_train_num} from './store';
-    import { Train }                                        from './train';
+    import {tick2sec, tick2min, tick2hr}                                from './common';
+    import type {Tick, HM, Control}                                     from './common';
+    import {stations, train_types, trains, focus_train_num, tick_range} from './store';
+    import {Train}                                                      from './train';
 
-    const tick2pt = (x: Tick)   => x * 5;
-    const pt2tick = (x: number) => Math.round(x / 5);
+    let tickpt_r  = 5;
+    const tick2pt = (x: Tick)   => x * tickpt_r;
+    const pt2tick = (x: number) => Math.round(x / tickpt_r);
     const hm2pt   = (x: HM)     => x * 1;
 
     const width   = 1200;
     const width0  = 50;
-    const height  = 500;
+    const height  = 450;
     const height0 = 60;
     const height1 = 40;
     const margin  = 10;
 
     let view_tick = 1440;
     let view_hm   = 0;
+
+    $: {view_tick = 0; view_tick = $tick_range[0] + $tick_range[1] - $tick_range[1];}
+    $: tickpt_r  = width / ($tick_range[1] - $tick_range[0])
 
     function wheel_handler (event: any): void {
         event.preventDefault();
@@ -115,7 +119,7 @@
         </defs>
 
         <!-- Grids -->
-        {#each (new Array(144)).map(x => x * 40).filter(x => x >= view_tick && tick2pt(x - view_tick) < width) as t}
+        {#each [...Array(144).keys()].map(x => x * 40).filter(x => x >= view_tick && tick2pt(x - view_tick) < width) as t}
             <line class={(t % 240)? "grid": "gridb"}
                 x1={width0 + tick2pt(t - view_tick)} y1={height0}
                 x2={width0 + tick2pt(t - view_tick)} y2={height0 + height} />
@@ -175,8 +179,7 @@
                   y2={height0 + height + height1 / ((item.c == "S" || item.c == "N")? 3: 1.5)} />
             <text x={width0 + tick2pt(item.t - view_tick)}
                   y={height0 / ((item.c == "S" || item.c == "N")? 3: 1.5)} >
-                  {tick2min(item.t).toString().padStart(2, "0") + "." +
-                   tick2sec(item.t).toString().padStart(2, "0")} </text>
+                  {`${tick2min(item.t)}.${tick2sec(item.t)}`} </text>
             <use href={item.c == "N"? "#icon_plus": item.c == "S"? "#icon_minus": item.c == "C"? "#icon_shiftc": "#icon_shift"}
                  x={width0 + tick2pt(item.t - view_tick) - ((item.c == "N" || item.c == "S")? 8: 12)}
                  y={height0 + height + height1 / ((item.c == "S" || item.c == "N")? 3: 1.5) - 8}
@@ -184,10 +187,9 @@
         {/each}
         
         <!-- Labels -->
-        {#each (new Array(144)).map(x => x * 40).filter(x => x >= view_tick && tick2pt(x - view_tick) < width) as t}
+        {#each [...Array(144).keys()].map(x => x * 40).filter(x => x >= view_tick && tick2pt(x - view_tick) < width) as t}
             <text x={width0 + tick2pt(t - view_tick)} y={height0 - 6}> 
-                  {(t % 240)? tick2min(t).toString().padStart(2, "0"): 
-                               tick2hr(t).toString().padStart(2, "0") + "00"}
+                  {`${(t % 240)? "": tick2hr(t)}${tick2min(t)}`}
             </text>
         {/each}
         {#each $stations.filter(x => x.dist >= view_hm && hm2pt(x.dist - view_hm) < height) as s}
