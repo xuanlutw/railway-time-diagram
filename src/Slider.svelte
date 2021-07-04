@@ -5,7 +5,6 @@
 
     let tick_range_o = [0, 0];
     $: {
-        console.log($tick_range, tick_range_o);
         if ($tick_range[1] - $tick_range[0] > 480) {
             if ($tick_range[0] == tick_range_o[0]) {
                 $tick_range[0] = $tick_range[1] - 480;

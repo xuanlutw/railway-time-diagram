@@ -9,9 +9,12 @@
     const pt2tick = (x: number) => Math.round(x / tickpt_r);
     const hm2pt   = (x: HM)     => x * 1;
 
-    const width   = 1200;
+    let   w_width = 100;
+    let   w_height= 100;
+    let   width   = 1200;
+    let   height  = 450;
+
     const width0  = 50;
-    const height  = 450;
     const height0 = 60;
     const height1 = 40;
     const margin  = 10;
@@ -21,14 +24,17 @@
 
     $: {view_tick = 0; view_tick = $tick_range[0] + $tick_range[1] - $tick_range[1];}
     $: tickpt_r  = width / ($tick_range[1] - $tick_range[0])
+    $: width  = w_width - 2 * margin - width0 - 20;
+    $: height = w_height * 0.6;
 
     function wheel_handler (event: any): void {
         event.preventDefault();
-        view_tick += event.deltaX;
-        view_hm   += event.deltaY / 10;
+        const delta_tick = Math.sign(event.deltaX) * 40;
+        $tick_range = [$tick_range[0] + delta_tick, $tick_range[1] + delta_tick];
+        view_hm   += Math.sign(event.deltaY) * 15;
     }
 
-    let control_items: {"t": Tick, "d": HM, "c": Control, "idx": number}[];
+    let control_items = <{"t": Tick, "d": HM, "c": Control, "idx": number}[]>[];
     $: control_items = ($focus_train_num < 0)? []: $trains[$focus_train_num].coords
         .map(x => (x.t == t_o)? {"t": t_n, "d": x.d, "c": <Control>"C", "idx": x.idx}: x)
         .filter((x, idx, arr) => (idx < arr.length - 1) && (x.t >= view_tick) && (tick2pt(x.t - view_tick) <= width))
@@ -83,6 +89,9 @@
         focus_train_num.update(_ => 0);
     }
 </script>
+
+<svelte:window bind:innerWidth={w_width}
+               bind:innerHeight={w_height}/>
 
 <div on:wheel={wheel_handler}
      on:click={drag_end}
