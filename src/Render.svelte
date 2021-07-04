@@ -1,32 +1,47 @@
 <script lang="ts">
-    import {tick2sec, tick2min, tick2hr}                                from './common';
-    import type {Tick, HM, Control}                                     from './common';
-    import {stations, train_types, trains, focus_train_num, tick_range} from './store';
-    import {inter_conflict} from './store';
-    import {Train}                                                      from './train';
+    import {tick2sec, tick2min, tick2hr}                   from './common';
+    import type {Tick, HM, Control}                        from './common';
+    import {stations, trains, focus_train_num, tick_range} from './store';
+    import {inter_conflict}                                from './store';
 
     let tickpt_r  = 5;
-    const tick2pt = (x: Tick)   => x * tickpt_r;
-    const pt2tick = (x: number) => Math.round(x / tickpt_r);
-    const hm2pt   = (x: HM)     => x * 1;
+    let tick2pt; 
+    $: tick2pt = (x: Tick)   => x * tickpt_r;
+    let pt2tick;
+    $: pt2tick = (x: number) => Math.round(x / tickpt_r);
+    let hm2pt   = (x: HM)     => x * 1;
 
-    let   w_width = 100;
-    let   w_height= 100;
-    let   width   = 1200;
-    let   height  = 450;
+    let w_width = 100;
+    let w_height= 100;
+    let width   = 1200;
+    let height  = 450;
+    let x0      = 0;
+    let y0      = 0;
 
     const width0  = 50;
     const height0 = 60;
     const height1 = 40;
     const margin  = 10;
+    const red_height1 = (x: Control) => height1 / ((x == "S" || x == "N")? 3: 1.5);
 
     let view_tick = 1440;
     let view_hm   = 0;
+    let view_x0   = 0;
+    let view_y0   = 0;
+    let view_w    = 0;
+    let view_h    = 0;
 
     $: {view_tick = 0; view_tick = $tick_range[0] + $tick_range[1] - $tick_range[1];}
     $: tickpt_r  = width / ($tick_range[1] - $tick_range[0])
     $: width  = w_width - 2 * margin - width0 - 20;
     $: height = w_height * 0.6;
+
+    $: x0 = tick2pt(view_tick);
+    $: y0 =   hm2pt(view_hm);
+    $: view_x0 = tick2pt(view_tick) - margin - width0
+    $: view_y0 = hm2pt(view_hm) - margin - height0
+    $: view_w  = width + width0 + 2 * margin
+    $: view_h  = height + height0 + height1 + 2 * margin
 
     function wheel_handler (event: any): void {
         event.preventDefault();
@@ -38,7 +53,9 @@
     let control_items = <{"t": Tick, "d": HM, "c": Control, "idx": number}[]>[];
     $: control_items = ($focus_train_num < 0)? []: $trains[$focus_train_num].coords
         .map(x => (x.t == t_o)? {"t": t_n, "d": x.d, "c": <Control>"C", "idx": x.idx}: x)
-        .filter((x, idx, arr) => (idx < arr.length - 1) && (x.t >= view_tick) && (tick2pt(x.t - view_tick) <= width))
+        .filter((x, idx, arr) => 
+            (idx < arr.length - 1) && (x.t > view_tick) && (tick2pt(x.t - view_tick) < width) && 
+                                      (x.d > view_hm)   && (  hm2pt(x.d - view_hm)   < height));
 
     let x_n:   number;
     let x_o:   number;
@@ -75,32 +92,15 @@
         t_n = t_o + pt2tick(x_n - x_o);
     }
 
-    $: if ($train_types.length > 0) {
-        trains.update(x => {
-                x.push(new Train("123", 0, 0, 12, 
-                                 [true, false, true, true, false, true, true, true, true, true, true, true, true],
-                                 1400));
-                x.push(new Train("666", 0, 12, 0, 
-                                 [true, false, true, true, false, true, true, true, true, true, true, true, true],
-                                 1500));
-                x.push(new Train("7575", 1, 0, 8, 
-                                 [true, false, true, true, false, true, true, true, true, true, true, true, true],
-                                 1350));
-                return x});
-        focus_train_num.update(_ => 0);
-    }
-
 </script>
 
-<svelte:window bind:innerWidth={w_width}
+<svelte:window bind:innerWidth ={w_width}
                bind:innerHeight={w_height}/>
 
-<div on:wheel={wheel_handler}
-     on:click={drag_end}
+<div on:wheel    ={wheel_handler}
+     on:click    ={drag_end}
      on:mousemove={mouse_position_handler}>
-    <svg width={width + width0 + 2 * margin} height={height + height0 + height1 + 2 * margin}
-         viewBox={`${-margin} ${-margin} ${width + width0 + 2 * margin} ${height + height0 + height1 + 2 * margin}`}>
-
+    <svg width  ={view_w} height ={view_h} viewBox={`${view_x0} ${view_y0} ${view_w} ${view_h}`}>
         <!-- Icons -->
         <defs>
             <g id="icon_plus">
@@ -132,96 +132,65 @@
         <!-- Conflicts -->
         {#each $inter_conflict as item}
             <rect class=inter_conflict
-                  x={width0 + tick2pt(item.tick1 - view_tick)}
-                  y={height0 + hm2pt($stations[item.idx].dist - view_hm)} 
+                  x={tick2pt(item.tick1)}
+                  y={hm2pt($stations[item.idx].dist)} 
                   width={tick2pt(item.tick2 - item.tick1)}
                   height={hm2pt($stations[item.idx + 1].dist - $stations[item.idx].dist)} />
         {/each}
 
         <!-- Grids -->
-        {#each [...Array(144).keys()].map(x => x * 40).filter(x => x >= view_tick && tick2pt(x - view_tick) < width) as t}
-            <line class={(t % 240)? "grid": "gridb"}
-                x1={width0 + tick2pt(t - view_tick)} y1={height0}
-                x2={width0 + tick2pt(t - view_tick)} y2={height0 + height} />
+        {#each [...Array(144).keys()].map((_, x) => x * 40) as t}
+            <path class={(t % 240)? "grid": "gridb"} d={`M${tick2pt(t)} ${hm2pt(view_hm)} v${height}`} />
         {/each}
-        {#each $stations.filter(x => x.dist >= view_hm && hm2pt(x.dist - view_hm) < height) as s}
-            <line class=grid
-                x1={width0}         y1={height0 + hm2pt(s.dist - view_hm)}
-                x2={width0 + width} y2={height0 + hm2pt(s.dist - view_hm)} />
+        {#each $stations.map(x => x.dist) as d}
+            <path class=grid d={`M${tick2pt(view_tick)} ${hm2pt(d)} h${width}`} />
         {/each}
  
-        <!-- Trains -->
-        {#each $trains as train}
-            <path class=train
-                d={train.coords.reduce((acc, x, idx) =>
-                        acc + `${idx == 0? "M": "L"}
-                               ${width0 + tick2pt(x.t - view_tick)}
-                               ${height0 + hm2pt(x.d - view_hm)}`, "")}
-                stroke={train.color} />
-        {/each}
-
         <!-- Train highlight -->
         {#if $focus_train_num >= 0}
             <defs>
                 <g id="focus_train">
                     <path d={$trains[$focus_train_num].coords.reduce((acc, x, idx) =>
-                            acc + `${idx == 0? "M": "L"}
-                                   ${width0 + tick2pt(x.t - view_tick)}
-                                   ${height0 + hm2pt(x.d - view_hm)}`, "")} />
+                        `${acc} ${idx == 0? "M": "L"}${tick2pt(x.t)} ${hm2pt(x.d)}`, "")} />
                 </g>
             </defs>
-            <use class=hh1 href="#focus_train" />
-            <use class=hh2 href="#focus_train" />
-            <use class=hh3 href="#focus_train" />
-            <use class=train href="#focus_train" stroke={$trains[$focus_train_num].color} />
+            <use class=hh1   href="#focus_train" />
+            <use class=hh2   href="#focus_train" />
+            <use class=hh3   href="#focus_train" />
         {/if}
 
+        <!-- Trains -->
+        {#each $trains as item}
+            <path class=train stroke={item.color}
+                d={item.coords.reduce((acc, x, idx) => `${acc} ${idx == 0? "M": "L"}${tick2pt(x.t)} ${hm2pt(x.d)}`, "")} />
+        {/each}
+
         <!-- Mask -->
-        <rect class=mask x={-margin} y={height + height0} 
-              width={width0 + width + 2 * margin}
-              height={height1 + margin} />
-        <rect class=mask x={-margin} y={-margin} 
-              width={width0 + width + 2 * margin}
-              height={height0 + margin} />
-        <rect class=mask x={-margin} y={-margin} 
-              width={width0 + margin}
-              height={height0 + height + height1 + 2 * margin} />
-        <rect class=mask x={width + width0} y={-margin} 
-              width={margin} 
-              height={height0 + height + height1 + 2 * margin} />
+        <path class=mask
+            d={`M${view_x0} ${view_y0} h${view_w} v${view_h} h${-view_w} Z
+                M${x0}      ${y0}      v${height} h${width}  v${-height} Z`} />
 
         <!-- Control Line -->
         {#each control_items as item}
-            <line class=control
-                  x1={width0  + tick2pt(item.t - view_tick)}
-                  y1={height0 / ((item.c == "S" || item.c == "N")? 3: 1.5)}
-                  x2={width0  + tick2pt(item.t - view_tick)}
-                  y2={height0 + height + height1 / ((item.c == "S" || item.c == "N")? 3: 1.5)} />
-            <text x={width0 + tick2pt(item.t - view_tick)}
-                  y={height0 / ((item.c == "S" || item.c == "N")? 3: 1.5)} >
+            <path class=control
+                d={`M${tick2pt(item.t)} ${hm2pt(item.d)} v${y0 + height + red_height1(item.c) - hm2pt(item.d)}`} />
+            <text x={tick2pt(item.t)} y={y0 + height + red_height1(item.c) + 5} >
                   {`${tick2min(item.t)}.${tick2sec(item.t)}`} </text>
-            <use href={item.c == "N"? "#icon_plus": item.c == "S"? "#icon_minus": item.c == "C"? "#icon_shiftc": "#icon_shift"}
-                 x={width0 + tick2pt(item.t - view_tick) - ((item.c == "N" || item.c == "S")? 8: 12)}
-                 y={height0 + height + height1 / ((item.c == "S" || item.c == "N")? 3: 1.5) - 8}
+            <use href={`#icon_${item.c == "N"? "plus": item.c == "S"? "minus": item.c == "C"? "shiftc": "shift"}`}
+                 x={tick2pt(item.t) - ((item.c == "N" || item.c == "S")? 8: 12)} y={hm2pt(item.d) - 8}
                  on:click={(event)=>click_handler(event, item.t, item.c, item.idx)} />
         {/each}
         
         <!-- Labels -->
         {#each [...Array(144).keys()].map(x => x * 40).filter(x => x >= view_tick && tick2pt(x - view_tick) < width) as t}
-            <text x={width0 + tick2pt(t - view_tick)} y={height0 - 6}> 
-                  {`${(t % 240)? "": tick2hr(t)}${tick2min(t)}`}
-            </text>
+            <text x={tick2pt(t)} y={y0 - 6}> {`${(t % 240)? "": tick2hr(t)}${tick2min(t)}`} </text>
         {/each}
         {#each $stations.filter(x => x.dist >= view_hm && hm2pt(x.dist - view_hm) < height) as s}
-            <text x=0 y={height0 + hm2pt(s.dist - view_hm)}> {s.name} </text>
+            <text x={x0 - width0} y={hm2pt(s.dist)}> {s.name} </text>
         {/each}
 
         <!-- Outer box --->
-        <path class="border" d=
-           {`M ${width0}         ${height0}        
-             L ${width0 + width} ${height0}
-             L ${width0 + width} ${height0 + height} 
-             L ${width0}         ${height0 + height} Z`} />
+        <path class="border" d={`M${x0} ${y0} h${width} v${height} h${-width} Z`} />
     </svg>
 </div>
 
@@ -232,9 +201,9 @@
 	.st3{fill:#9B90C2;}
 	.st4{fill:#9BF0FF;}
 
-    .border {stroke:#CCCCCC; stroke-width:6; fill:none;}
+    .border {stroke:#CCCCCC; stroke-width:4; fill:none;}
     .grid   {stroke:#CCCCCC; stroke-width:1;}
-    .gridb  {stroke:#CCCCCC; stroke-width:2;}
+    .gridb  {stroke:#CCCCCC; stroke-width:3;}
     .control{stroke:#888888; stroke-width:1; stroke-dasharray:5;}
     .mask   {fill:#FFFFFF;}
 
