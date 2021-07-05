@@ -42,4 +42,13 @@ export type Line = {
     train_types: Train_type[]
 }
 
+// Departure
+// stop Time
+// Stop
+// Non-stop
+// Control
 export type Control = "D"| "T"| "C"| "S"| "N";
+// Disable
+// Highlight only
+// Modify
+export type Focus   = "D"| "H"| "M";

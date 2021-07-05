@@ -3,14 +3,14 @@ import {stations, train_types}  from './store';
 import type {Tick, HM, Control} from './common';
 
 export class Train {
-    private type:        number;
-    private dep_station: number;
-    private arr_station: number;
-    private direction:   boolean; // True: follow the line info
-    private stops:       boolean[];
+    type:        number;
+    dep_station: number;
+    arr_station: number;
+    direction:   boolean; // True: follow the line info
+    stops:       boolean[];
 
-    private dep_t:       Tick
-    private stop_t:      Tick[];
+    dep_t:       Tick
+    stop_t:      Tick[];
 
     name:      string;
     type_name: string;

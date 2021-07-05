@@ -1,8 +1,8 @@
 <script lang="ts">
-    import {tick2sec, tick2min, tick2hr}                   from './common';
-    import type {Tick, HM, Control}                        from './common';
-    import {stations, trains, focus_train_num, tick_range} from './store';
-    import {inter_conflict}                                from './store';
+    import {tick2sec, tick2min, tick2hr}                     from './common';
+    import type {Tick, HM, Control}                          from './common';
+    import {stations, trains, focus_idx, focus_type, tick_range}   from './store';
+    import {view_tick, view_hm, inter_conflict, in_conflict} from './store';
 
     let tickpt_r  = 5;
     let tick2pt; 
@@ -19,27 +19,24 @@
     let y0      = 0;
 
     const width0  = 50;
-    const height0 = 60;
+    const height0 = 20;
     const height1 = 40;
     const margin  = 10;
     const red_height1 = (x: Control) => height1 / ((x == "S" || x == "N")? 3: 1.5);
 
-    let view_tick = 1440;
-    let view_hm   = 0;
     let view_x0   = 0;
     let view_y0   = 0;
     let view_w    = 0;
     let view_h    = 0;
 
-    $: {view_tick = 0; view_tick = $tick_range[0] + $tick_range[1] - $tick_range[1];}
     $: tickpt_r  = width / ($tick_range[1] - $tick_range[0])
     $: width  = w_width - 2 * margin - width0 - 20;
     $: height = w_height * 0.6;
 
-    $: x0 = tick2pt(view_tick);
-    $: y0 =   hm2pt(view_hm);
-    $: view_x0 = tick2pt(view_tick) - margin - width0
-    $: view_y0 = hm2pt(view_hm) - margin - height0
+    $: x0 = tick2pt($view_tick);
+    $: y0 =   hm2pt($view_hm);
+    $: view_x0 = tick2pt($view_tick) - margin - width0
+    $: view_y0 = hm2pt($view_hm) - margin - height0
     $: view_w  = width + width0 + 2 * margin
     $: view_h  = height + height0 + height1 + 2 * margin
 
@@ -47,17 +44,16 @@
         event.preventDefault();
         const delta_tick = Math.sign(event.deltaX) * 40;
         $tick_range = [$tick_range[0] + delta_tick, $tick_range[1] + delta_tick];
-        view_hm   += Math.sign(event.deltaY) * 15;
+        $view_hm   += Math.sign(event.deltaY) * 15;
     }
 
     let control_items = <{"t": Tick, "d": HM, "c": Control, "idx": number}[]>[];
-    $: control_items = ($focus_train_num < 0)? []: $trains[$focus_train_num].coords
+    $: control_items = ($focus_type != "M")? []: $trains[$focus_idx].coords
         .map(x => (x.t == t_o)? {"t": t_n, "d": x.d, "c": <Control>"C", "idx": x.idx}: x)
         .filter((x, idx, arr) => 
-            (idx < arr.length - 1) && (x.t > view_tick) && (tick2pt(x.t - view_tick) < width) && 
-                                      (x.d > view_hm)   && (  hm2pt(x.d - view_hm)   < height));
+            (idx < arr.length - 1) && (x.t > $view_tick) && (tick2pt(x.t - $view_tick) < width) && 
+                                      (x.d > $view_hm)   && (  hm2pt(x.d - $view_hm)   < height));
 
-    let x_n:   number;
     let x_o:   number;
     let t_n:   Tick;
     let t_o:   Tick;
@@ -66,30 +62,33 @@
     function click_handler (event: any, t: Tick, c: Control, idx: number): void {
         if (c == "S" || c == "N")
             trains.update(x => {
-                    x[$focus_train_num].flip_stop(idx);
+                    x[$focus_idx].flip_stop(idx);
                     return x;
                     });
         else if (c == "D" || c == "T") {
             x_o   = event.x;
             t_o   = t;
+            t_n   = t_o;
             idx_o = idx;
         }
     }
 
     function drag_end (event: any): void {
         if (Math.abs(event.x - x_o) > 5) {
-            if (idx_o >= 0)
+            if (t_o >= 0)
                 trains.update(x => {
-                        x[$focus_train_num].set_time(idx_o, pt2tick(event.x - x_o));
+                        x[$focus_idx].set_time(idx_o, pt2tick(event.x - x_o));
                         return x;
                         });
-            idx_o = -1;
+            t_o = -1;
         }
     }
 
     function mouse_position_handler (event: any): void {
-        x_n = event.x;
-        t_n = t_o + pt2tick(x_n - x_o);
+        if ($focus_type != "M")
+            t_o = -1;
+        else
+            t_n = t_o + pt2tick(event.x - x_o);
     }
 
 </script>
@@ -137,20 +136,24 @@
                   width={tick2pt(item.tick2 - item.tick1)}
                   height={hm2pt($stations[item.idx + 1].dist - $stations[item.idx].dist)} />
         {/each}
+        {#each $in_conflict as item}
+            <path class=in_conflict
+                  d={`M${tick2pt(item.tick1)} ${hm2pt($stations[item.idx].dist)} h${tick2pt(item.tick2 - item.tick1)}`} />
+        {/each}
 
         <!-- Grids -->
         {#each [...Array(144).keys()].map((_, x) => x * 40) as t}
-            <path class={(t % 240)? "grid": "gridb"} d={`M${tick2pt(t)} ${hm2pt(view_hm)} v${height}`} />
+            <path class={(t % 240)? "grid": "gridb"} d={`M${tick2pt(t)} ${hm2pt($view_hm)} v${height}`} />
         {/each}
         {#each $stations.map(x => x.dist) as d}
-            <path class=grid d={`M${tick2pt(view_tick)} ${hm2pt(d)} h${width}`} />
+            <path class=grid d={`M${tick2pt($view_tick)} ${hm2pt(d)} h${width}`} />
         {/each}
  
         <!-- Train highlight -->
-        {#if $focus_train_num >= 0}
+        {#if $focus_type != "D"}
             <defs>
                 <g id="focus_train">
-                    <path d={$trains[$focus_train_num].coords.reduce((acc, x, idx) =>
+                    <path d={$trains[$focus_idx].coords.reduce((acc, x, idx) =>
                         `${acc} ${idx == 0? "M": "L"}${tick2pt(x.t)} ${hm2pt(x.d)}`, "")} />
                 </g>
             </defs>
@@ -182,10 +185,10 @@
         {/each}
         
         <!-- Labels -->
-        {#each [...Array(144).keys()].map(x => x * 40).filter(x => x >= view_tick && tick2pt(x - view_tick) < width) as t}
+        {#each [...Array(144).keys()].map(x => x * 40).filter(x => x >= $view_tick && tick2pt(x - $view_tick) < width) as t}
             <text x={tick2pt(t)} y={y0 - 6}> {`${(t % 240)? "": tick2hr(t)}${tick2min(t)}`} </text>
         {/each}
-        {#each $stations.filter(x => x.dist >= view_hm && hm2pt(x.dist - view_hm) < height) as s}
+        {#each $stations.filter(x => x.dist >= $view_hm && hm2pt(x.dist - $view_hm) < height) as s}
             <text x={x0 - width0} y={hm2pt(s.dist)}> {s.name} </text>
         {/each}
 
@@ -214,4 +217,5 @@
     .hh3    {stroke:#D0BF9D; stroke-width:10; opacity:0.6; fill:none;}
 
     .inter_conflict {fill:#FF0000; opacity:0.5;}
+    .in_conflict {stroke:#FF0000; stroke-width:20; opacity:0.8;}
 </style>

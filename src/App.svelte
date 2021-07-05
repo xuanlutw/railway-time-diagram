@@ -1,9 +1,9 @@
 <script lang="ts">
-    import {line_name, train_types, trains, focus_train_num}      from './store';
-    import Render                                                 from './Render.svelte';
-    import Slider                                                 from './Slider.svelte';
-    import {Dropdown, DropdownItem, DropdownMenu, DropdownToggle} from 'sveltestrap';
-    import {Train}                                                from './train';
+    import {line_name, train_types, trains} from './store';
+    import Render                           from './Render.svelte';
+    import Slider                           from './Slider.svelte';
+    import Selector                         from './Selector.svelte';
+    import {Train}                          from './train';
 
     // Add test trains
     $: if ($train_types.length > 0) {
@@ -18,34 +18,35 @@
                                  [true, false, true, true, false, true, true, true, true, true, true, true, true],
                                  1350));
                 return x});
-        focus_train_num.update(_ => 0);
     }
 
 </script>
 
 <svelte:head>
 	<title> 運行圖 </title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css">
 </svelte:head>
 
-<h1> {$line_name}各級列車 </h1>
+<div class=left>
+    <h1> {$line_name}各級列車 </h1>
+</div>
 
-<Dropdown>
-    <DropdownToggle caret> 
-        {$focus_train_num >= 0? `${$trains[$focus_train_num].type_name}-${$trains[$focus_train_num].name}`: "View"}
-    </DropdownToggle>
-    <DropdownMenu>
-        <DropdownItem on:click={() => $focus_train_num = -1}> View </DropdownItem>
-        {#each $trains as train, n}
-            <DropdownItem on:click={() => $focus_train_num = n}>
-                {`${train.type_name}-${train.name}`}
-            </DropdownItem>
-        {/each}
-  </DropdownMenu>
-</Dropdown>
+<div class=right>
+    <Selector />
+</div>
 
 <Render />
 <Slider />
 
 <style>
+    .left  {
+        margin-top: 20px;
+        display:    inline-block;
+        text-align: center;
+        width:      30%; 
+    }
+    .right {
+        display: inline-block;
+        width:   60%;
+    }
 </style>

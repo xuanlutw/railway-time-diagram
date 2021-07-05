@@ -1,7 +1,7 @@
 import { readable, writable, derived } from 'svelte/store';
-import type {Tick, Line}               from "./common";
+import type {Tick, HM, Line, Focus}    from "./common";
 import { Train }                       from './train';
-import { inter_check }                 from './check';
+import { inter_check, in_check }       from './check';
 
 // Const Meta Infos
 const line_info = readable({"name": "", "stations": [], "train_types": []} as Line, async function start(set){
@@ -28,14 +28,25 @@ export const train_types = derived(
 );
 
 // Train Infos
-export const trains          = writable(<Train[]>[]);
-export const focus_train_num = writable(-1);
+export const trains     = writable(<Train[]>[]);
+export const focus_idx  = writable(0);
+export const focus_type = writable(<Focus>"D");
 
 // Window Infos
 export const tick_range = writable(<Tick[]>[500, 1000]);
+export const view_tick  = derived(
+	tick_range,
+	$tick_range => $tick_range[0]
+);
+export const view_hm   = writable(<HM>10);
 
 // Conflict Infos
 export const inter_conflict = derived(
 	trains,
 	$trains => inter_check($trains)
+);
+
+export const in_conflict = derived(
+	trains,
+	$trains => in_check($trains)
 );
