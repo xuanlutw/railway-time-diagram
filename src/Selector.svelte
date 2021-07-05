@@ -29,13 +29,12 @@
                         return x;
                         });
                 train_idx = ($trains.length - 1).toString();
-                focus_handler("D");
+                train_change_handler(train_idx, "D");
                 break;
         }
     }
 
-    function change_handler (event: any) {
-        const val = event.target.value;
+    function select_change_handler (val: "V"| "M"| "N"| "D") {
         switch (val) {
             case "V":
                 $focus_type = "D";
@@ -55,18 +54,18 @@
             case "D":
                 if (train_idx == "-1")
                     train_idx = "0";
-                focus_handler(val);
+                train_change_handler(train_idx, val);
                 break;
         }
     }
 
-    function focus_handler (val: "V"| "M"| "N"| "D") {
+    function train_change_handler (val: string, val_s: "V"| "M"| "N"| "D") {
         if ($trains.length == 0)
             $focus_type = "D";
         else {
-            $focus_type = (val == "M")? "M": "H";
-            $focus_idx  = Number(train_idx);
-            const train = $trains[train_idx];
+            $focus_type = (val_s == "M")? "M": "H";
+            $focus_idx  = Number(val);
+            const train = $trains[$focus_idx];
             train_type  = train.type.toString();
             dep_idx     = train.dep_station.toString();
             arr_idx     = train.arr_station.toString();
@@ -79,7 +78,7 @@
 
 <FormGroup >
     <div class="WTF">
-        <Input type="select" name="select" bind:value={status} on:change={change_handler}>
+        <Input type="select" name="select" bind:value={status} on:change={e => select_change_handler(e.target.value)}>
             <option value={"V"}> 檢視 </option>
             <option value={"M"}> 調整 </option>
             <option value={"N"}> 新增 </option>
@@ -100,7 +99,7 @@
         {#if status == "N"}
             <Input type="text" placeholder="車次" bind:value={train_name}/>
         {:else}
-            <Input type="select" disabled={status == "V"} bind:value={train_idx} on:change={_ => focus_handler(status)}>
+            <Input type="select" disabled={status == "V"} bind:value={train_idx} on:change={e => train_change_handler(e.target.value, status)}>
                 {#if status == "V"}
                     <option value=-1> --- </option>
                 {/if}

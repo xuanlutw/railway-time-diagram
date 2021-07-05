@@ -33,12 +33,12 @@ export const focus_idx  = writable(0);
 export const focus_type = writable(<Focus>"D");
 
 // Window Infos
-export const tick_range = writable(<Tick[]>[500, 1000]);
+export const tick_range = writable(<Tick[]>[1200, 1680]);
 export const view_tick  = derived(
 	tick_range,
 	$tick_range => $tick_range[0]
 );
-export const view_hm   = writable(<HM>10);
+export const view_hm   = writable(<HM>-10);
 
 // Conflict Infos
 export const inter_conflict = derived(

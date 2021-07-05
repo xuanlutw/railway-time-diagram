@@ -1,13 +1,12 @@
-import {get}                                                        from 'svelte/store';
-import {stations, train_types, trains, focus_train_num, tick_range} from './store';
-import type {Tick, HM, Control}                                     from './common';
-import {Train}                                                      from './train';
+import {get}       from 'svelte/store';
+import {stations}  from './store';
+import type {Tick} from './common';
+import {Train}     from './train';
 
 export function inter_check (trains: Train[]): {"tick1": Tick, "tick2": Tick, "idx": number}[] {
     const dists = get(stations).map(x => x.dist);
     const ticks = trains
-        .map(x => x.coords.map(y => y.t))
-        .reduce((acc, x) => [...acc, ...x], [])
+        .reduce((acc, x) => [...acc, ...(x.coords.map(y => y.t))], [])
         .sort()
         .filter((x, idx, arr) => (idx == arr.indexOf(x)));
 
@@ -36,8 +35,7 @@ export function inter_check (trains: Train[]): {"tick1": Tick, "tick2": Tick, "i
 export function in_check (trains: Train[]): {"tick1": Tick, "tick2": Tick, "idx": number}[] {
     const dists = get(stations).map(x => x.dist);
     const ticks = trains
-        .map(x => x.coords.map(y => y.t))
-        .reduce((acc, x) => [...acc, ...x], [])
+        .reduce((acc, x) => [...acc, ...(x.coords.map(y => y.t))], [])
         .sort()
         .filter((x, idx, arr) => (idx == arr.indexOf(x)));
 

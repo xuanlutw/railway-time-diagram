@@ -1,8 +1,8 @@
 <script lang="ts">
-    import {tick2sec, tick2min, tick2hr}                     from './common';
-    import type {Tick, HM, Control}                          from './common';
-    import {stations, trains, focus_idx, focus_type, tick_range}   from './store';
-    import {view_tick, view_hm, inter_conflict, in_conflict} from './store';
+    import {tick2sec, tick2min, tick2hr}                         from './common';
+    import type {Tick, HM, Control}                              from './common';
+    import {stations, trains, focus_idx, focus_type, tick_range} from './store';
+    import {view_tick, view_hm, inter_conflict, in_conflict}     from './store';
 
     let tickpt_r  = 5;
     let tick2pt; 
@@ -166,6 +166,19 @@
         {#each $trains as item}
             <path class=train stroke={item.color}
                 d={item.coords.reduce((acc, x, idx) => `${acc} ${idx == 0? "M": "L"}${tick2pt(x.t)} ${hm2pt(x.d)}`, "")} />
+            {#each item.coords.reduce((acc, x, idx, arr) => {
+                    if ((idx < arr.length - 1) && (x.d != arr[idx + 1].d))
+                        return [...acc, {"t1": x.t, "t2": arr[idx + 1].t, "d1": x.d, "d2": arr[idx + 1].d}];
+                    else
+                        return acc; }, []).filter((_, idx) => idx % 3 == 0) as x}
+                <defs>
+                    <path id={`${x.t1}${item.name}`} 
+                        d={`M${tick2pt(x.t1)} ${hm2pt(x.d1)} L${tick2pt(x.t2)} ${hm2pt(x.d2)}`} />
+                </defs>
+                <text stroke={item.color} font-size=10px >
+                    <textPath startOffset="50%" href={`#${x.t1}${item.name}`}> {item.name} </textPath>
+                </text>
+            {/each}
         {/each}
 
         <!-- Mask -->
