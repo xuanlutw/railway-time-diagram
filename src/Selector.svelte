@@ -13,11 +13,13 @@
     function click_handler () {
         switch (status) {
             case "D":
+                /*train_idx = ($focus_idx == 0)? 0: $focus_idx - 1;*/
                 trains.update(x => {x.splice($focus_idx, 1); return x;});
-                $focus_idx = $focus_idx - 1;
+                /*train_change_handler(train_idx =, "D");*/
+                train_change_handler(train_idx, "D");
                 break;
             case "N":
-                if (Number(dep_idx) == Number(arr_idx))
+                if (train_name == "" || Number(dep_idx) == Number(arr_idx))
                     break;
                 trains.update(x => {
                         x.push(new Train(train_name, 
@@ -29,6 +31,7 @@
                         return x;
                         });
                 train_idx = ($trains.length - 1).toString();
+                select_change_handler("N");
                 train_change_handler(train_idx, "D");
                 break;
         }
@@ -48,7 +51,7 @@
                 train_name  = "";
                 train_type  = "0";
                 dep_idx     = "0";
-                arr_idx     = "0";
+                arr_idx     = ($stations.length - 1).toString();
                 break;
             case "M":
             case "D":
@@ -60,6 +63,7 @@
     }
 
     function train_change_handler (val: string, val_s: "V"| "M"| "N"| "D") {
+        console.log("HA")
         if ($trains.length == 0)
             $focus_type = "D";
         else {
