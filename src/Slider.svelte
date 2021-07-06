@@ -1,16 +1,16 @@
 <script lang="ts">
     import {tick2min, tick2hr} from './common';
     import {tick_range}        from './store';
-    import RangeSlider         from "svelte-range-slider-pips";
+    import RangeSlider         from "../../svelte-range-slider-pips/src/RangeSlider.svelte";
 
     let tick_range_o = [0, 0];
     $: {
-        if ($tick_range[1] - $tick_range[0] > 480) {
+        if ($tick_range[1] - $tick_range[0] < 240) {
             if ($tick_range[0] == tick_range_o[0]) {
-                $tick_range[0] = $tick_range[1] - 480;
+                $tick_range[0] = $tick_range[1] - 240;
             }
             else {
-                $tick_range[1] = $tick_range[0] + 480;
+                $tick_range[1] = $tick_range[0] + 240;
             }
             tick_range_o = $tick_range;
         }

@@ -198,9 +198,15 @@
         {/each}
         
         <!-- Labels -->
-        {#each [...Array(144).keys()].map(x => x * 40).filter(x => x >= $view_tick && tick2pt(x - $view_tick) < width) as t}
-            <text x={tick2pt(t)} y={y0 - 6}> {`${(t % 240)? "": tick2hr(t)}${tick2min(t)}`} </text>
-        {/each}
+        {#if $tick_range[1] - $tick_range[0] > 960}
+            {#each [...Array(24).keys()].map(x => x * 240).filter(x => x >= $view_tick && tick2pt(x - $view_tick) < width) as t}
+                <text x={tick2pt(t)} y={y0 - 6}> {`${tick2hr(t)}00`} </text>
+            {/each}
+        {:else}
+            {#each [...Array(144).keys()].map(x => x * 40).filter(x => x >= $view_tick && tick2pt(x - $view_tick) < width) as t}
+                <text x={tick2pt(t)} y={y0 - 6}> {`${(t % 240)? "": tick2hr(t)}${tick2min(t)}`} </text>
+            {/each}
+        {/if}
         {#each $stations.filter(x => x.dist >= $view_hm && hm2pt(x.dist - $view_hm) < height) as s}
             <text x={x0 - width0} y={hm2pt(s.dist)}> {s.name} </text>
         {/each}
