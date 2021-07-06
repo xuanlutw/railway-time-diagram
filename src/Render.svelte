@@ -138,7 +138,7 @@
         {/each}
         {#each $in_conflict as item}
             <path class=in_conflict
-                  d={`M${tick2pt(item.tick1)} ${hm2pt($stations[item.idx].dist)} h${tick2pt(item.tick2 - item.tick1)}`} />
+                  d={`M${tick2pt(item.t1)} ${hm2pt(item.d)} h${tick2pt(item.t2 - item.t1)}`} />
         {/each}
 
         <!-- Grids -->

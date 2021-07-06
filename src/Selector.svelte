@@ -13,8 +13,8 @@
     function click_handler () {
         switch (status) {
             case "D":
-                /*train_idx = ($focus_idx == 0)? 0: $focus_idx - 1;*/
                 trains.update(x => {x.splice($focus_idx, 1); return x;});
+                train_idx = (($focus_idx == 0)? 0: $focus_idx - 1).toString();
                 /*train_change_handler(train_idx =, "D");*/
                 train_change_handler(train_idx, "D");
                 break;
@@ -63,7 +63,6 @@
     }
 
     function train_change_handler (val: string, val_s: "V"| "M"| "N"| "D") {
-        console.log("HA")
         if ($trains.length == 0)
             $focus_type = "D";
         else {

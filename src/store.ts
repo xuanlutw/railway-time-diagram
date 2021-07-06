@@ -46,7 +46,4 @@ export const inter_conflict = derived(
 	$trains => inter_check($trains)
 );
 
-export const in_conflict = derived(
-	trains,
-	$trains => in_check($trains)
-);
+export const in_conflict = derived([trains, stations], ([a, b]) => in_check(a, b));
