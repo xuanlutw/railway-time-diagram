@@ -138,5 +138,5 @@
 </FormGroup>
 
 <style>
-    .WTF {width: 80pt; display: inline-block;}
+    .WTF {width: 90pt; display: inline-block;}
 </style>
