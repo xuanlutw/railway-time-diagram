@@ -18,7 +18,7 @@
     let x0      = 0;
     let y0      = 0;
 
-    const width0  = 50;
+    const width0  = 80;
     const height0 = 20;
     const height1 = 40;
     const margin  = 10;
@@ -142,7 +142,7 @@
         {/each}
 
         <!-- Grids -->
-        {#each [...Array(144).keys()].map((_, x) => x * 40) as t}
+        {#each [...Array(144).keys()].map(x => x * 40).filter(x => x > $view_tick && tick2pt(x - $view_tick) < width) as t}
             <path class={(t % 240)? "grid": "gridb"} d={`M${tick2pt(t)} ${hm2pt($view_hm)} v${height}`} />
         {/each}
         {#each $stations.map(x => x.dist) as d}
@@ -199,20 +199,39 @@
         
         <!-- Labels -->
         {#if $tick_range[1] - $tick_range[0] > 960}
-            {#each [...Array(24).keys()].map(x => x * 240).filter(x => x >= $view_tick && tick2pt(x - $view_tick) < width) as t}
+            {#each [...Array(24).keys()].map(x => x * 240).filter(x => x > $view_tick && tick2pt(x - $view_tick) < width) as t}
                 <text x={tick2pt(t)} y={y0 - 6}> {`${tick2hr(t)}00`} </text>
             {/each}
         {:else}
-            {#each [...Array(144).keys()].map(x => x * 40).filter(x => x >= $view_tick && tick2pt(x - $view_tick) < width) as t}
+            {#each [...Array(144).keys()].map(x => x * 40).filter(x => x > $view_tick && tick2pt(x - $view_tick) < width) as t}
                 <text x={tick2pt(t)} y={y0 - 6}> {`${(t % 240)? "": tick2hr(t)}${tick2min(t)}`} </text>
             {/each}
         {/if}
         {#each $stations.filter(x => x.dist >= $view_hm && hm2pt(x.dist - $view_hm) < height) as s}
-            <text x={x0 - width0} y={hm2pt(s.dist)}> {s.name} </text>
+            <text x={x0 - 10} y={hm2pt(s.dist) + 6} text-anchor="end"> {s.name} </text>
         {/each}
 
         <!-- Outer box --->
         <path class="border" d={`M${x0} ${y0} h${width} v${height} h${-width} Z`} />
+        
+        <!-- Line info -->
+        {#each $stations.filter((_, idx) => idx != $stations.length - 1) as s, idx}
+            <path class="track_mask" d={`M${x0} ${hm2pt(s.dist)} v${hm2pt($stations[idx + 1].dist - s.dist)}`} />
+            {#if (s.n_track_inter == 1)}
+                <path class="track" d={`M${x0} ${hm2pt(s.dist)} v${hm2pt($stations[idx + 1].dist - s.dist)}`} />
+            {:else}
+                <path class="track" d={`M${x0 + 2} ${hm2pt(s.dist)} v${Math.min(y0 + height, hm2pt($stations[idx + 1].dist) - s.dist)}`} />
+                <path class="track" d={`M${x0 - 2} ${hm2pt(s.dist)} v${Math.min(y0 + height, hm2pt($stations[idx + 1].dist) - s.dist)}`} />
+            {/if}
+        {/each}
+        {#each $stations.filter(x => x.dist >= $view_hm && hm2pt(x.dist - $view_hm) < height) as s}
+            <circle class=station cx={x0} cy={hm2pt(s.dist)} r=8 />
+            <text x={x0} y={hm2pt(s.dist) + 5} font-size=12px font-weight="bold" text-anchor="middle" >
+                {s.n_track_in}
+            </text>
+        {/each}
+        <path class="track_mask" d={`M${x0} ${y0-2} v${-100}`} />
+        <path class="track_mask" d={`M${x0} ${y0 + height + 2} v${100}`} />
     </svg>
 </div>
 
@@ -228,6 +247,10 @@
     .gridb  {stroke:#CCCCCC; stroke-width:3;}
     .control{stroke:#888888; stroke-width:1; stroke-dasharray:5;}
     .mask   {fill:#FFFFFF;}
+
+    .station    {stroke:#000000; stroke-width:2; fill:#FFFFFF;}
+    .track      {stroke:#000000; stroke-width:2;}
+    .track_mask {stroke:#FFFFFF; stroke-width:6;}
 
     .train  {stroke-width:2; fill:none;}
 

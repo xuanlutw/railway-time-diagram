@@ -19,10 +19,12 @@ export type HM = number;
 
 // Station
 export type Station = {
-    name:       string,
-    dist:       HM,
-    n_track_in: number,
-    n_track_to: number
+    name:           string,
+    dist:           HM,
+    n_track_in:     number,
+    n_track_inter:  number,
+    interval_cis:   Tick,
+    interval_trans: Tick
 };
 
 // Train_type
