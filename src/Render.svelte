@@ -128,19 +128,6 @@
             </g>
         </defs>
 
-        <!-- Conflicts -->
-        {#each $inter_conflict as item}
-            <rect class=inter_conflict
-                  x={tick2pt(item.tick1)}
-                  y={hm2pt($stations[item.idx].dist)} 
-                  width={tick2pt(item.tick2 - item.tick1)}
-                  height={hm2pt($stations[item.idx + 1].dist - $stations[item.idx].dist)} />
-        {/each}
-        {#each $in_conflict as item}
-            <path class=in_conflict
-                  d={`M${tick2pt(item.t1)} ${hm2pt(item.d)} h${tick2pt(item.t2 - item.t1)}`} />
-        {/each}
-
         <!-- Grids -->
         {#each [...Array(144).keys()].map(x => x * 40).filter(x => x > $view_tick && tick2pt(x - $view_tick) < width) as t}
             <path class={(t % 240)? "grid": "gridb"} d={`M${tick2pt(t)} ${hm2pt($view_hm)} v${height}`} />
@@ -149,6 +136,16 @@
             <path class=grid d={`M${tick2pt($view_tick)} ${hm2pt(d)} h${width}`} />
         {/each}
  
+        <!-- Conflicts -->
+        {#each $inter_conflict as item}
+            <rect class=inter_conflict x={tick2pt(item.t1)} y={hm2pt(item.d1)} 
+                  width={tick2pt(item.t2 - item.t1)} height={hm2pt(item.d2 - item.d1)} />
+        {/each}
+        {#each $in_conflict as item}
+            <path class=in_conflict
+                  d={`M${tick2pt(item.t1)} ${hm2pt(item.d)} h${tick2pt(item.t2 - item.t1)}`} />
+        {/each}
+
         <!-- Train highlight -->
         {#if $focus_type != "D"}
             <defs>
@@ -258,6 +255,6 @@
     .hh2    {stroke:#E0CFAD; stroke-width:13; opacity:0.4; fill:none;}
     .hh3    {stroke:#D0BF9D; stroke-width:10; opacity:0.6; fill:none;}
 
-    .inter_conflict {fill:#FF0000; opacity:0.5;}
-    .in_conflict {stroke:#FF0000; stroke-width:20; opacity:0.8;}
+    .inter_conflict {fill:#FF0000; opacity:0.3;}
+    .in_conflict    {stroke:#FF0000; stroke-width:20; opacity:0.3;}
 </style>

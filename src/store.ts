@@ -41,10 +41,5 @@ export const view_tick  = derived(
 export const view_hm   = writable(<HM>-10);
 
 // Conflict Infos
-export const inter_conflict = derived(
-	trains,
-	$trains => []
-	//$trains => inter_check($trains)
-);
-
-export const in_conflict = derived([trains, stations], ([a, b]) => in_check(a, b));
+export const inter_conflict = derived([trains, stations], ([a, b]) => inter_check(a, b));
+export const    in_conflict = derived([trains, stations], ([a, b]) =>    in_check(a, b));
