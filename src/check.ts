@@ -3,6 +3,13 @@ import {stations}               from './store';
 import type {Tick, HM, Station} from './common';
 import {Train}                  from './train';
 
+function get_ticks (trains: Train[]) {
+    return trains
+        .reduce((acc, x) => [...acc, ...(x.coords.map(y => y.t))], [])
+        .sort()
+        .filter((x, idx, arr) => (idx == arr.indexOf(x)));
+}
+
 export function inter_check (trains: Train[]): {"tick1": Tick, "tick2": Tick, "idx": number}[] {
     const dists = get(stations).map(x => x.dist);
     const ticks = trains
@@ -32,30 +39,26 @@ export function inter_check (trains: Train[]): {"tick1": Tick, "tick2": Tick, "i
         .reduce((acc, x) => [...acc, ...x], []);
 }
 
-export function in_check (trains: Train[], stations: Station[]): {"t1": Tick, "t2": Tick, "d": HM}[] {
-    const dists = stations.map(x => x.dist);
-    const ticks = trains
-        .reduce((acc, x) => [...acc, ...(x.coords.map(y => y.t))], [])
-        .sort()
-        .filter((x, idx, arr) => (idx == arr.indexOf(x)));
-
-    const in_count = Array(dists.length).fill(0).map(_ => Array(ticks.length).fill(0));
+function in_check_single (trains: Train[], station: Station): {"t1": Tick, "t2": Tick, "d": HM}[] {
+    const ticks = get_ticks(trains);
+    const count = Array(ticks.length).fill(0);
 
     trains.map(train => train.coords.map((x, idx, arr) => {
-        if (idx == arr.length - 1)
+        if (x.d != station.dist)
             return;
-        const xn = arr[idx + 1];
-        ticks.map((t, idx2) => {
-            in_count[Math.min(x.idx, xn.idx)][idx2] +=
-                (x.c == "S")? (t >= x.t && t < xn.t):
-                (x.c == "N")? (t == x.t):
-                (x.c == "D")? (t == x.t): 0;
-            });
-        }));
-    return in_count
-        .reduce((acc_out, item, idx_out) => [...acc_out, ...item
-            .reduce((acc_in, x, idx_in) => 
-                (x > stations[idx_out].n_track_in)? 
-                    [...acc_out, {"t1": ticks[idx_in], "t2": ticks[idx_in + 1], "d": dists[idx_out]}]: acc_in,
-                [])], [])
+        else if ((x.c == "N") || (x.c == "D") || (x.c == "S" && idx == arr.length - 1)) {
+            count[ticks.indexOf(x.t)] += 1;
+        }
+        else if (x.c == "S") {
+            const xn = arr[idx + 1];
+            ticks.map((t, idx2) => count[idx2] += (t >= x.t && t < xn.t));
+        }
+    }));
+
+    return count.reduce((acc, x, idx) => 
+        (x <= station.n_track_in)? acc: [...acc, {"t1": ticks[idx], "t2": ticks[idx + 1], "d": station.dist}], []);
+}
+
+export function in_check (trains: Train[], stations: Station[]): {"t1": Tick, "t2": Tick, "d": HM}[] {
+    return stations.reduce((acc, x) => [...acc, ...in_check_single(trains, x)], []);
 }
