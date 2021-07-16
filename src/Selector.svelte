@@ -26,8 +26,8 @@
                                          Number(train_type), 
                                          Number(dep_idx), 
                                          Number(arr_idx), 
-                                         Array($stations.length).map(_ => false),
-                                         1200));
+                                         1200,
+                                         $train_types[Number(train_type)].stop_t));
                         return x;
                         });
                 train_idx = ($trains.length - 1).toString();
@@ -70,9 +70,9 @@
             $focus_idx  = Number(val);
             const train = $trains[$focus_idx];
             train_type  = train.type.toString();
-            dep_idx     = train.dep_station.toString();
-            arr_idx     = train.arr_station.toString();
-            $view_hm    = Math.round(($stations[train.arr_station].dist + $stations[train.dep_station].dist) / 2);
+            dep_idx     = train.dep_s.toString();
+            arr_idx     = train.arr_s.toString();
+            $view_hm    = Math.round(($stations[train.arr_s].dist + $stations[train.dep_s].dist) / 2);
             $tick_range = $tick_range.map(x => x + train.dep_t - $tick_range[0] - ((train.dep_t + 39) % 40));
         }
     }

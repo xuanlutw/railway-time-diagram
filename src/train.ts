@@ -4,8 +4,8 @@ import type {Tick, HM, Control} from './common';
 
 export class Train {
     type:        number;
-    dep_station: number;
-    arr_station: number;
+    dep_s: number;
+    arr_s: number;
     direction:   boolean; // True: follow the line info
     stops:       boolean[];
 
@@ -17,25 +17,26 @@ export class Train {
     color:     string;
     coords:    {"t": Tick, "d": HM, "c": Control, "idx": number}[];
 
-    constructor (name:        string,
-                 type:        number,
-                 dep_station: number,
-                 arr_station: number,
-                 stops:       boolean[],
-                 dep_t:       Tick) {
-        this.name        = name;
-        this.type        = type;
-        this.type_name   = get(train_types)[type].name;
-        this.dep_station = dep_station;
-        this.arr_station = arr_station;
-        this.direction   = dep_station < arr_station? true: false;
-        this.stops       = stops;
-        this.stops[dep_station] = true;
-        this.stops[arr_station] = true;
-        this.dep_t       = dep_t;
-        this.stop_t      = [...get(train_types)[type].stop_t];
+    constructor (name:   string,
+                 type:   number,
+                 dep_s:  number,
+                 arr_s:  number,
+                 dep_t:  Tick,
+                 stop_t: Tick[]) {
+        this.name      = name;
+        this.type      = type;
+        this.type_name = get(train_types)[type].name;
+        this.dep_s     = dep_s;
+        this.arr_s     = arr_s;
+        this.direction = dep_s < arr_s? true: false;
+        this.dep_t     = dep_t;
+        this.stops     = stop_t.map((t, idx) => t != 0 || idx == dep_s || idx == arr_s);
+        this.stop_t    = stop_t.map((t, idx) => {
+            const min_stop_t = get(train_types)[type].stop_t[idx];
+            return t == 0? 0: t < min_stop_t? min_stop_t: t;
+        });
 
-        this.color       = get(train_types)[type].color;
+        this.color        = get(train_types)[type].color;
         this.compute_coords();
     }
 
@@ -45,7 +46,7 @@ export class Train {
     }
 
     set_time(idx: number, delta: Tick): void {
-        if (idx == this.dep_station)
+        if (idx == this.dep_s)
             this.dep_t += delta;
         else {
             if (this.stop_t[idx] + delta >= get(train_types)[this.type].stop_t[idx])
@@ -62,9 +63,9 @@ export class Train {
         const coords_push = (idx: number, c: Control) => this.coords.push({"t": tick_count, "d": get(stations)[idx].dist, "c": c, "idx": idx});
 
         if (this.direction) {
-            for (let idx = this.dep_station; idx < this.arr_station; ++idx) {
+            for (let idx = this.dep_s; idx < this.arr_s; ++idx) {
                 // Stop time
-                if (idx == this.dep_station)
+                if (idx == this.dep_s)
                     coords_push(idx, "D");
                 else if (this.stops[idx]) {
                     tick_count += this.stop_t[idx];
@@ -85,9 +86,9 @@ export class Train {
             }
         }
         else {
-            for (let idx = this.dep_station; idx > this.arr_station; --idx) {
+            for (let idx = this.dep_s; idx > this.arr_s; --idx) {
                 // Stop time
-                if (idx == this.dep_station)
+                if (idx == this.dep_s)
                     coords_push(idx, "D");
                 else if (this.stops[idx]) {
                     tick_count += this.stop_t[idx];
