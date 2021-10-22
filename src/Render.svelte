@@ -140,10 +140,18 @@
         {#each $inter_conflict as item}
             <rect class=inter_conflict x={tick2pt(item.t1)} y={hm2pt(item.d1)} 
                   width={tick2pt(item.t2 - item.t1)} height={hm2pt(item.d2 - item.d1)} />
+            <rect class=inter_conflict_margin x={tick2pt(item.t1) - 5} y={hm2pt(item.d1)} 
+                  width=5 height={hm2pt(item.d2 - item.d1)} />
+            <rect class=inter_conflict_margin x={tick2pt(item.t2)} y={hm2pt(item.d1)} 
+                  width=5  height={hm2pt(item.d2 - item.d1)} />
         {/each}
         {#each $in_conflict as item}
             <path class=in_conflict
                   d={`M${tick2pt(item.t1)} ${hm2pt(item.d)} h${tick2pt(item.t2 - item.t1)}`} />
+            <path class=in_conflict_margin
+                  d={`M${tick2pt(item.t1)} ${hm2pt(item.d)} h-5`} />
+            <path class=in_conflict_margin
+                  d={`M${tick2pt(item.t2)} ${hm2pt(item.d)} h5`} />
         {/each}
 
         <!-- Train highlight -->
@@ -255,6 +263,8 @@
     .hh2    {stroke:#E0CFAD; stroke-width:13; opacity:0.4; fill:none;}
     .hh3    {stroke:#D0BF9D; stroke-width:10; opacity:0.6; fill:none;}
 
-    .inter_conflict {fill:#FF0000; opacity:0.3;}
-    .in_conflict    {stroke:#FF0000; stroke-width:20; opacity:0.3;}
+    .inter_conflict        {fill:#FF0000; opacity:0.3;}
+    .inter_conflict_margin {fill:#FF6600; opacity:0.3;}
+    .in_conflict           {stroke:#FF0000; stroke-width:15; opacity:0.3;}
+    .in_conflict_margin    {stroke:#FF6600; stroke-width:15; opacity:0.3;}
 </style>
