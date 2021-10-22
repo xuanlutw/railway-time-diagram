@@ -42,9 +42,18 @@
 
     function wheel_handler (event: any): void {
         event.preventDefault();
-        const delta_tick = Math.sign(event.deltaX) * 40;
+        let delta_tick: number;
+        let delta_hm:   number;
+        if (event.ctrlKey) {
+            delta_tick = Math.sign(event.deltaY) * 40;
+            delta_hm   = Math.sign(event.deltaX) * 15;
+        }
+        else {
+            delta_tick = Math.sign(event.deltaX) * 40;
+            delta_hm   = Math.sign(event.deltaY) * 15;
+        }
         $tick_range = [$tick_range[0] + delta_tick, $tick_range[1] + delta_tick];
-        $view_hm   += Math.sign(event.deltaY) * 15;
+        $view_hm   += delta_hm;
     }
 
     let control_items = <{"t": Tick, "d": HM, "c": Control, "idx": number}[]>[];
