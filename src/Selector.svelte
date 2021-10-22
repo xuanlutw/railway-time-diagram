@@ -72,8 +72,8 @@
             train_type  = train.type.toString();
             dep_idx     = train.dep_s.toString();
             arr_idx     = train.arr_s.toString();
-            $view_hm    = Math.round(($stations[train.arr_s].dist + $stations[train.dep_s].dist) / 2);
-            $tick_range = $tick_range.map(x => x + train.dep_t - $tick_range[0] - ((train.dep_t + 39) % 40));
+            /* $view_hm    = Math.round(($stations[train.arr_s].dist + $stations[train.dep_s].dist) / 2); */
+            /* $tick_range = $tick_range.map(x => x + train.dep_t - $tick_range[0] - ((train.dep_t + 39) % 40)); */
         }
     }
 
