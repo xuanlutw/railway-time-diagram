@@ -1,6 +1,6 @@
 <script lang="ts">
     import {train_types, trains, focus_idx, focus_type, stations, tick_range, view_hm} from './store';
-    import {FormGroup, Input, Label, Button}                                           from 'sveltestrap';
+    import {FormGroup, Input, Label, Button, ButtonGroup}                              from 'sveltestrap';
     import {Train}                                                                     from './train';
 
     let status: "V"| "M"| "N"| "D" = "V";
@@ -38,6 +38,7 @@
     }
 
     function select_change_handler (val: "V"| "M"| "N"| "D") {
+        status = val
         switch (val) {
             case "V":
                 $focus_type = "D";
@@ -80,13 +81,13 @@
 </script>
 
 <FormGroup >
-    <div class="WTF">
-        <Input type="select" name="select" bind:value={status} on:change={e => select_change_handler(e.target.value)}>
-            <option value={"V"}> 檢視 </option>
-            <option value={"M"}> 調整 </option>
-            <option value={"N"}> 新增 </option>
-            <option value={"D"}> 刪除 </option>
-        </Input>
+    <div class="WTF0">
+        <ButtonGroup name="select" >
+            <Button color={status == "V"? "primary": "secondary"} on:click={() => select_change_handler("V")}> 檢視 </Button>
+            <Button color={status == "M"? "primary": "secondary"} on:click={() => select_change_handler("M")}> 調整 </Button>
+            <Button color={status == "N"? "primary": "secondary"} on:click={() => select_change_handler("N")}> 新增 </Button>
+            <Button color={status == "D"? "primary": "secondary"} on:click={() => select_change_handler("D")}> 刪除 </Button>
+        </ButtonGroup>
     </div>
     <div class="WTF">
         <Input type="select" disabled={status != "N"} bind:value={train_type}>
@@ -138,5 +139,6 @@
 </FormGroup>
 
 <style>
-    .WTF {width: 90pt; display: inline-block;}
+    .WTF0 {width: 180pt; display: inline-block;}
+    .WTF  {width:  90pt; display: inline-block;}
 </style>
