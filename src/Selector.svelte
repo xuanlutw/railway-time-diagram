@@ -1,6 +1,6 @@
 <script lang="ts">
     import {train_types, trains, focus_idx, focus_type, stations, tick_range, view_hm} from './store';
-    import {FormGroup, Input, Label, Button, ButtonGroup}                              from 'sveltestrap';
+    import {FormGroup, Input, Label, Button, ButtonGroup, Icon}                        from 'sveltestrap';
     import {Train}                                                                     from './train';
 
     let status: "V"| "M"| "N"| "D" = "V";
@@ -136,6 +136,7 @@
         </Input>
     </div>
     <Button disabled={status == "V" || status == "M"} on:click={click_handler}> 確認 </Button>
+    <Button on:click={()=>window.open("https://github.com/xuanlutw/railway-time-diagram")}><Icon name="github" /></Button>
 </FormGroup>
 
 <style>

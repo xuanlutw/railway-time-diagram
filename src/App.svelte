@@ -6,30 +6,37 @@
 </script>
 
 <svelte:head>
-	<title> 運行圖 </title>
+	<title> {$line_name}各級列車 - 運行圖 </title>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.1/dist/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.6.1/font/bootstrap-icons.css">
 </svelte:head>
 
-<div class=left>
-    <h1> {$line_name}各級列車 </h1>
-</div>
+<div class=out>
+    <h1 class=left> {$line_name}各級列車 </h1>
 
-<div class=right>
-    <Selector />
+    <div class=right>
+        <Selector />
+    </div>
 </div>
 
 <Render />
 <Slider />
 
 <style>
-    .left  {
+    .out {
+        margin: 0;
         margin-top: 20px;
+        vertical-align: middle;
+    }
+    .left  {
+        margin:     0;
         display:    inline-block;
         text-align: center;
-        width:      30%; 
+        width:      25%; 
     }
     .right {
+        margin:  0;
         display: inline-block;
-        width:   60%;
+        width:   70%;
     }
 </style>
