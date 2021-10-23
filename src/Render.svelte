@@ -55,6 +55,10 @@
         }
         $tick_range = [$tick_range[0] + delta_tick, $tick_range[1] + delta_tick];
         $view_hm   += delta_hm;
+        if ($stations.length > 0 && $view_hm > $stations.at(-1).dist - 100)
+            $view_hm = $stations.at(-1).dist - 100
+        if ($view_hm < -10)
+            $view_hm = -10
     }
 
     let control_items = <{"t": Tick, "d": HM, "c": Control, "idx": number}[]>[];
