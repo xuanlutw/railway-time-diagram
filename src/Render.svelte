@@ -10,7 +10,7 @@
     $: tick2pt   = (x: Tick)   => x * tickpt_r;
     let pt2tick;
     $: pt2tick = (x: number) => Math.round(x / tickpt_r);
-    let hm2pt   = (x: HM)     => x * 1;
+    let hm2pt  = (x: HM)     => x * 1.25;
 
     let w_width = 100;
     let w_height= 100;
@@ -270,8 +270,8 @@
             {#if (s.n_track_inter == 1)}
                 <path class="track" d={`M${x0} ${hm2pt(s.dist)} v${hm2pt($stations[idx + 1].dist - s.dist)}`} />
             {:else}
-                <path class="track" d={`M${x0 + 2} ${hm2pt(s.dist)} v${Math.min(y0 + height, hm2pt($stations[idx + 1].dist) - s.dist)}`} />
-                <path class="track" d={`M${x0 - 2} ${hm2pt(s.dist)} v${Math.min(y0 + height, hm2pt($stations[idx + 1].dist) - s.dist)}`} />
+                <path class="track" d={`M${x0 + 2} ${hm2pt(s.dist)} v${hm2pt($stations[idx + 1].dist - s.dist)}`} />
+                <path class="track" d={`M${x0 - 2} ${hm2pt(s.dist)} v${hm2pt($stations[idx + 1].dist - s.dist)}`} />
             {/if}
         {/each}
         {#each $stations.filter(x => x.dist >= $view_hm && hm2pt(x.dist - $view_hm) < height) as s}
@@ -341,8 +341,8 @@
                 {#if (s.n_track_inter == 1)}
                     <path class="track" d={`M${t} ${hm2pt(s.dist)} v${hm2pt($stations[idx + 1].dist - s.dist)}`} />
                 {:else}
-                    <path class="track" d={`M${t + 2} ${hm2pt(s.dist)} v${hm2pt($stations[idx + 1].dist) - s.dist}`} />
-                    <path class="track" d={`M${t - 2} ${hm2pt(s.dist)} v${hm2pt($stations[idx + 1].dist) - s.dist}`} />
+                    <path class="track" d={`M${t + 2} ${hm2pt(s.dist)} v${hm2pt($stations[idx + 1].dist - s.dist)}`} />
+                    <path class="track" d={`M${t - 2} ${hm2pt(s.dist)} v${hm2pt($stations[idx + 1].dist - s.dist)}`} />
                 {/if}
             {/each}
             {#each $stations as s}
