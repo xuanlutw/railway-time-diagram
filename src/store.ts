@@ -16,8 +16,14 @@ const line_info = readable(<Line>{"name": "", "stations": [], "train_types": []}
 
     let rest  = await fetch('train_info.json');
     let infot = await rest.json();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.has('train_info')) {
+        infot = JSON.parse(atob(urlParams.get('train_info')))
+        console.log(infot)
+    }
     trains.update(x => {
-        infot.map(t => x.push(new Train(t.name, t.type, t.dep_s, t.arr_s, t.dep_t, t.stops)));
+        infot.map(t => x.push(new Train(t.name, t.type, t.dep_s, t.arr_s, t.dep_t, t.stop_t)));
         return x})
 	return function stop() {};
 });

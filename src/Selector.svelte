@@ -86,17 +86,21 @@
         link.click();  
     }
 
+    function copy_link () {
+        const train_info = btoa(JSON.stringify($trains.map(x => x.extract()))) // base64 encoding
+        const self_url   = window.location.href.split('?')[0]
+        navigator.clipboard.writeText(self_url + "?train_info=" + train_info )
+    }
+
 </script>
 
 <FormGroup >
-    <div class="WTF0">
-        <ButtonGroup name="select" >
-            <Button color={status == "V"? "primary": "secondary"} on:click={() => select_change_handler("V")}> 檢視 </Button>
-            <Button color={status == "M"? "primary": "secondary"} on:click={() => select_change_handler("M")}> 調整 </Button>
-            <Button color={status == "N"? "primary": "secondary"} on:click={() => select_change_handler("N")}> 新增 </Button>
-            <Button color={status == "D"? "primary": "secondary"} on:click={() => select_change_handler("D")}> 刪除 </Button>
-        </ButtonGroup>
-    </div>
+    <ButtonGroup name="select" >
+        <Button color={status == "V"? "primary": "secondary"} on:click={() => select_change_handler("V")}> 檢視 </Button>
+        <Button color={status == "M"? "primary": "secondary"} on:click={() => select_change_handler("M")}> 調整 </Button>
+        <Button color={status == "N"? "primary": "secondary"} on:click={() => select_change_handler("N")}> 新增 </Button>
+        <Button color={status == "D"? "primary": "secondary"} on:click={() => select_change_handler("D")}> 刪除 </Button>
+    </ButtonGroup>
     <div class="WTF">
         <Input type="select" disabled={status != "N"} bind:value={train_type}>
             {#if status == "V"}
@@ -144,11 +148,13 @@
         </Input>
     </div>
     <Button disabled={status == "V" || status == "M"} on:click={click_handler}> 確認 </Button>
-    <Button on:click={download_svg}> 輸出 </Button>
+    <ButtonGroup name="select" >
+        <Button on:click={download_svg}> 輸出 </Button>
+        <Button on:click={copy_link}> 複製連結 </Button>
+    </ButtonGroup>
     <Button on:click={()=>window.open("https://github.com/xuanlutw/railway-time-diagram")}><Icon name="github" /></Button>
 </FormGroup>
 
 <style>
-    .WTF0 {width: 180pt; display: inline-block;}
-    .WTF  {width:  90pt; display: inline-block;}
+    .WTF {width: 80pt; display: inline-block;}
 </style>

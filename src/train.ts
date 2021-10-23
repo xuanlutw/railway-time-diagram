@@ -40,6 +40,14 @@ export class Train {
         this.compute_coords();
     }
 
+    extract (): any {
+        return {"name":   this.name,
+                "type":   this.type,
+                "dep_s":  this.dep_s,
+                "arr_s":  this.arr_s,
+                "dep_t":  this.dep_t,
+                "stop_t": this.stop_t}
+    }
     flip_stop(idx: number):void {
         this.stops[idx] = !this.stops[idx];
         this.compute_coords();
