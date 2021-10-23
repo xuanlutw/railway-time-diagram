@@ -3,6 +3,7 @@
     import Render      from './Render.svelte';
     import Slider      from './Slider.svelte';
     import Selector    from './Selector.svelte';
+    import Simulate    from './Simulate.svelte';
 </script>
 
 <svelte:head>
@@ -21,6 +22,7 @@
 
 <Render />
 <Slider />
+<Simulate />
 
 <style>
     .out {

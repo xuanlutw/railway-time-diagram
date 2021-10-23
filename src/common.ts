@@ -20,6 +20,7 @@ export type HM = number;
 // Station
 export type Station = {
     name:           string,
+    idx:            number,
     dist:           HM,
     n_track_in:     number,
     n_track_inter:  number,
@@ -40,6 +41,7 @@ export type Train_type = {
 
 export type Line = {
     name:        string,
+    module_name: string,
     stations:    Station[],
     train_types: Train_type[]
 }

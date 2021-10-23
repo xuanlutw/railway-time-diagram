@@ -1,7 +1,8 @@
 import { readable, writable, derived } from 'svelte/store';
 import type {Tick, HM, Line, Focus}    from "./common";
 import { Train }                       from './train';
-import { inter_check, in_check }       from './check';
+import { inter_check }       from './check';
+import { comp_in_conflict, comp_in_track }       from './check';
 
 // Train Infos
 export const trains     = writable(<Train[]>[]);
@@ -16,6 +17,7 @@ const line_info = readable(<Line>{"name": "", "stations": [], "train_types": []}
     let res  = await fetch("line_info_" + module_name + ".json");
     let info = await res.json();
     info.module_name = module_name;
+    info.stations.map((x, idx) => x.idx = idx);
     set(info);
 
     let rest  = await fetch("train_info_" + module_name + ".json");
@@ -42,4 +44,5 @@ export const view_hm    = writable(<HM>-10);
 
 // Conflict Infos
 export const inter_conflict = derived([trains, stations], ([a, b]) => inter_check(a, b));
-export const    in_conflict = derived([trains, stations], ([a, b]) =>    in_check(a, b));
+export const in_conflict    = derived([trains, stations], ([a, b]) => comp_in_conflict(a, b));
+export const in_track       = derived([trains, stations], ([a, b]) => comp_in_track(a, b));

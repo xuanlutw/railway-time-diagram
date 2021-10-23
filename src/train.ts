@@ -48,6 +48,7 @@ export class Train {
                 "dep_t":  this.dep_t,
                 "stop_t": this.stop_t}
     }
+
     flip_stop(idx: number):void {
         this.stops[idx] = !this.stops[idx];
         this.compute_coords();
@@ -63,6 +64,25 @@ export class Train {
                 this.stop_t[idx] = get(train_types)[this.type].stop_t[idx];
         }
         this.compute_coords();
+    }
+
+    in_station(tick: Tick): Station {
+        let station_idx = -1;
+        this.coords.slice(0, -1).map((coord1, idx) => {
+            const coord2 = this.coords[idx + 1];
+            if (coord1.t > tick || coord2.t <= tick)
+                return;
+            if (coord1.t == tick)
+                station_idx = coord1.idx;
+            if (coord2.t == tick && coord2.c == "S")
+                station_idx = coord2.idx;
+            if (coord1.t < tick && coord2.t > tick && coord1.c == "S")
+                station_idx = coord1.idx;
+        })
+        if (station_idx >= 0)
+            return get(stations)[station_idx];
+        else
+            return -1;
     }
 
     compute_coords(): void {

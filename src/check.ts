@@ -1,7 +1,7 @@
 import type {Tick, HM, Station} from './common';
 import {Train}                  from './train';
 
-function get_ticks (trains: Train[]) {
+export function get_ticks (trains: Train[]): Tick[] {
     return trains
         .reduce((acc, x) => [...acc, ...(x.coords.map(y => y.t))], [])
         .sort()
@@ -158,26 +158,70 @@ export function inter_check (trains: Train[], stations: Station[]): {"t1": Tick,
     }, []);
 }
 
-function in_check_station (trains: Train[], station: Station): {"t1": Tick, "t2": Tick, "d": HM}[] {
-    const ticks = get_ticks(trains);
-    const count = Array(ticks.length).fill(0);
+// In station check
+function comp_in_check_pre_station (ticks: Tick[], trains: Train[], station: Station): number[][] {
+    let count = Array(ticks.length).fill(0).map(_ => Array(0));
 
-    trains.map(train => train.coords.map((x, idx, arr) => {
-        if (x.d != station.dist)
-            return;
-        else if ((x.c == "N") || (x.c == "D") || (x.c == "S" && idx == arr.length - 1)) {
-            count[ticks.indexOf(x.t)] += 1;
-        }
-        else if (x.c == "S") {
-            const xn = arr[idx + 1];
-            ticks.map((t, idx2) => count[idx2] += (t >= x.t && t < xn.t));
-        }
-    }));
+    // Collect relation
+    trains.map((train, train_idx) => {
+        train.coords.map((x, idx) => {
+            if (x.d != station.dist)
+                return;
+            else if ((x.c == "N") || (x.c == "D") || (x.c == "S" && idx == train.coords.length - 1))
+                count[ticks.indexOf(x.t)].push(train_idx);
+            else if (x.c == "S") {
+                const xn = train.coords[idx + 1];
+                ticks.map((t, idx2) => {
+                    if (t >= x.t && t <= xn.t)
+                        count[idx2].push(train_idx);
+                })
+            }
+        })
+    });
 
-    return count.reduce((acc, x, idx) => 
-        (x <= station.n_track_in)? acc: [...acc, {"t1": ticks[idx], "t2": ticks[idx + 1], "d": station.dist}], []);
+    return count;
 }
 
-export function in_check (trains: Train[], stations: Station[]): {"t1": Tick, "t2": Tick, "d": HM}[] {
-    return stations.reduce((acc, x) => [...acc, ...in_check_station(trains, x)], []);
+function comp_in_conflict_station (ticks: Tick[], count: number[][], station: Station): {"t1": Tick, "t2": Tick, "d": HM}[] {
+    // Check Conflict 
+    return count.reduce((acc, x, idx) => 
+        (x.length <= station.n_track_in)? acc:
+        [...acc, {"t1": ticks[idx], "t2": ticks[idx + 1], "d": station.dist}],
+        <{"t1": Tick, "t2": Tick, "d": HM}[]>[]);
+}
+
+export function comp_in_conflict (trains: Train[], stations: Station[]): {"t1": Tick, "t2": Tick, "d": HM}[] {
+    const ticks = get_ticks(trains)
+    const conflicts = stations.map(station => {
+        const count = comp_in_check_pre_station(ticks, trains, station);
+        return comp_in_conflict_station(ticks, count, station);
+    });
+    return conflicts.reduce((acc, x) => [...acc, ...x], []);
+}
+
+function comp_in_track_station (ticks: Tick[], trains: Train[], count: number[][], station: Station): number[] {
+    let track = Array(trains.length).fill(-1);
+    // Assign Track
+    const diff = (arr1, arr2) => arr1.filter(x => !arr2.includes(x));
+    count.map(trains_in_idx => {
+        trains_in_idx.map((idx, n) => {
+            if (track[idx] != -1)                               // Already assign
+                return;
+            const track_assigned = trains_in_idx.map(x => track[x]).filter(x => x != -1);
+            if (track_assigned.length == station.n_track_in)    // No need assign conflic train
+                return;
+            track[idx] = diff([...Array(station.n_track_in).keys()], track_assigned)[0];
+        })
+    });
+
+    return track;
+}
+
+export function comp_in_track (trains: Train[], stations: Station[]): number[][] {
+    const ticks = get_ticks(trains)
+    const track = stations.map(station => {
+        const count = comp_in_check_pre_station(ticks, trains, station);
+        return comp_in_track_station(ticks, trains, count, station);
+    });
+    return track;
 }
