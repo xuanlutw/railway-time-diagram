@@ -10,14 +10,17 @@ export const focus_type = writable(<Focus>"D");
 
 // Meta Infos
 const line_info = readable(<Line>{"name": "", "stations": [], "train_types": []}, async function start(set){
-    let res  = await fetch('line_info.json');
+    const urlParams   = new URLSearchParams(window.location.search);
+    const module_name = urlParams.has('module')? urlParams.get('module'): ""
+
+    let res  = await fetch("line_info_" + module_name + ".json");
     let info = await res.json();
+    info.module_name = module_name;
     set(info);
 
-    let rest  = await fetch('train_info.json');
+    let rest  = await fetch("train_info_" + module_name + ".json");
     let infot = await rest.json();
 
-    const urlParams = new URLSearchParams(window.location.search);
     if (urlParams.has('train_info')) {
         infot = JSON.parse(atob(urlParams.get('train_info')))
         console.log(infot)
@@ -28,6 +31,7 @@ const line_info = readable(<Line>{"name": "", "stations": [], "train_types": []}
 	return function stop() {};
 });
 export const line_name   = derived(line_info, x => x.name);
+export const module_name = derived(line_info, x => x.module_name);
 export const stations    = derived(line_info, x => x.stations);
 export const train_types = derived(line_info, x => x.train_types);
 

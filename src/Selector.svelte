@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {train_types, trains, focus_idx, focus_type, stations, tick_range, view_hm, line_name} from './store';
+    import {train_types, trains, focus_idx, focus_type, stations, tick_range, view_hm, line_name, module_name} from './store';
     import {FormGroup, Input, Label, Button, ButtonGroup, Icon}                        from 'sveltestrap';
     import {Train}                                                                     from './train';
 
@@ -89,7 +89,7 @@
     function copy_link () {
         const train_info = btoa(JSON.stringify($trains.map(x => x.extract()))) // base64 encoding
         const self_url   = window.location.href.split('?')[0]
-        navigator.clipboard.writeText(self_url + "?train_info=" + train_info )
+        navigator.clipboard.writeText(self_url + "?module=" + $module_name + "&train_info=" + train_info)
     }
 
 </script>
