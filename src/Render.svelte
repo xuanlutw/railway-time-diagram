@@ -6,7 +6,8 @@
 
     let tickpt_r  = 5;
     let tick2pt; 
-    $: tick2pt = (x: Tick)   => x * tickpt_r;
+    let tick2ptd = (x: Tick)   => x * 2.75;
+    $: tick2pt   = (x: Tick)   => x * tickpt_r;
     let pt2tick;
     $: pt2tick = (x: number) => Math.round(x / tickpt_r);
     let hm2pt   = (x: HM)     => x * 1;
@@ -33,11 +34,11 @@
     $: width  = w_width - 2 * margin - width0 - 20;
     $: height = w_height * 0.6;
 
-    $: x0 = tick2pt($view_tick);
-    $: y0 =   hm2pt($view_hm);
+    $: x0      = tick2pt($view_tick);
+    $: y0      =   hm2pt($view_hm);
     $: view_x0 = tick2pt($view_tick) - margin - width0
-    $: view_y0 = hm2pt($view_hm) - margin - height0
-    $: view_w  = width + width0 + 2 * margin
+    $: view_y0 =   hm2pt($view_hm)   - margin - height0
+    $: view_w  = width  + width0            + 2 * margin
     $: view_h  = height + height0 + height1 + 2 * margin
 
     function wheel_handler (event: any): void {
@@ -100,6 +101,13 @@
             t_n = t_o + pt2tick(event.x - x_o);
     }
 
+    // Download svg
+    let w0  = tick2ptd(5760)
+    let w0d = tick2ptd(5760) + 2 * width0;
+    let h0  = 0;
+    let h0d = 0;
+    $:  h0  = hm2pt($stations.length > 0? $stations.at(-1).dist: 0);
+    $:  h0d = hm2pt($stations.length > 0? $stations.at(-1).dist: 0) + 2 * width0;
 </script>
 
 <svelte:window bind:innerWidth ={w_width}
@@ -108,9 +116,37 @@
 <div on:wheel    ={wheel_handler}
      on:click    ={drag_end}
      on:mousemove={mouse_position_handler}>
-    <svg width  ={view_w} height ={view_h} viewBox={`${view_x0} ${view_y0} ${view_w} ${view_h}`}>
-        <!-- Icons -->
+    <svg width={view_w} height={view_h} viewBox={`${view_x0} ${view_y0} ${view_w} ${view_h}`}>
+        <!-- Styles and Icons -->
         <defs>
+            <style>
+                .st0{fill:#F19483;}
+                .st1{fill:#A8D8B9;}
+                .st2{fill:#FFFFFF;}
+                .st3{fill:#9B90C2;}
+                .st4{fill:#9BF0FF;}
+
+                .border {stroke:#CCCCCC; stroke-width:4; fill:none;}
+                .grid   {stroke:#CCCCCC; stroke-width:1;}
+                .gridb  {stroke:#CCCCCC; stroke-width:3;}
+                .control{stroke:#888888; stroke-width:1; stroke-dasharray:5;}
+                .mask   {fill:#FFFFFF;}
+
+                .station    {stroke:#000000; stroke-width:2; fill:#FFFFFF;}
+                .track      {stroke:#000000; stroke-width:2;}
+                .track_mask {stroke:#FFFFFF; stroke-width:6;}
+
+                .train  {stroke-width:2; fill:none;}
+
+                .hh1    {stroke:#F0DFBD; stroke-width:16; opacity:0.2; fill:none;}
+                .hh2    {stroke:#E0CFAD; stroke-width:13; opacity:0.4; fill:none;}
+                .hh3    {stroke:#D0BF9D; stroke-width:10; opacity:0.6; fill:none;}
+
+                .inter_conflict        {fill:#FF0000; opacity:0.3;}
+                .inter_conflict_margin {fill:#FF6600; opacity:0.3;}
+                .in_conflict           {stroke:#FF0000; stroke-width:15; opacity:0.3;}
+                .in_conflict_margin    {stroke:#FF6600; stroke-width:15; opacity:0.3;}
+            </style>
             <g id="icon_plus">
                 <circle class="st1" cx="8" cy="8" r="7.5"/>
                 <path d="M8,1c3.86,0,7,3.14,7,7s-3.14,7-7,7s-7-3.14-7-7S4.14,1,8,1 M8,0C3.58,0,0,3.58,0,8s3.58,8,8,8s8-3.58,8-8S12.42,0,8,0L8,0 z"/>
@@ -249,31 +285,109 @@
     </svg>
 </div>
 
-<style>
-	.st0{fill:#F19483;}
-	.st1{fill:#A8D8B9;}
-	.st2{fill:#FFFFFF;}
-	.st3{fill:#9B90C2;}
-	.st4{fill:#9BF0FF;}
+<!-- Download svg -->
+<div style="display:none">
+    <svg xmlns="http://www.w3.org/2000/svg"
+         id=main_svg width ={w0d}
+         height={h0d}
+         viewBox={`${-width0} ${-width0} ${w0d} ${h0d}`}>
+        <!-- Styles -->
+        <defs>
+            <style>
+                .border {stroke:#CCCCCC; stroke-width:4; fill:none;}
+                .grid   {stroke:#CCCCCC; stroke-width:1;}
+                .gridb  {stroke:#CCCCCC; stroke-width:3;}
+                .control{stroke:#888888; stroke-width:1; stroke-dasharray:5;}
+                .mask   {fill:#FFFFFF;}
 
-    .border {stroke:#CCCCCC; stroke-width:4; fill:none;}
-    .grid   {stroke:#CCCCCC; stroke-width:1;}
-    .gridb  {stroke:#CCCCCC; stroke-width:3;}
-    .control{stroke:#888888; stroke-width:1; stroke-dasharray:5;}
-    .mask   {fill:#FFFFFF;}
+                .station    {stroke:#000000; stroke-width:2; fill:#FFFFFF;}
+                .track      {stroke:#000000; stroke-width:2;}
+                .track_mask {stroke:#FFFFFF; stroke-width:6;}
 
-    .station    {stroke:#000000; stroke-width:2; fill:#FFFFFF;}
-    .track      {stroke:#000000; stroke-width:2;}
-    .track_mask {stroke:#FFFFFF; stroke-width:6;}
+                .train  {stroke-width:2; fill:none;}
 
-    .train  {stroke-width:2; fill:none;}
+                .hh1    {stroke:#F0DFBD; stroke-width:16; opacity:0.2; fill:none;}
+                .hh2    {stroke:#E0CFAD; stroke-width:13; opacity:0.4; fill:none;}
+                .hh3    {stroke:#D0BF9D; stroke-width:10; opacity:0.6; fill:none;}
 
-    .hh1    {stroke:#F0DFBD; stroke-width:16; opacity:0.2; fill:none;}
-    .hh2    {stroke:#E0CFAD; stroke-width:13; opacity:0.4; fill:none;}
-    .hh3    {stroke:#D0BF9D; stroke-width:10; opacity:0.6; fill:none;}
+                .inter_conflict        {fill:#FF0000; opacity:0.3;}
+                .inter_conflict_margin {fill:#FF6600; opacity:0.3;}
+                .in_conflict           {stroke:#FF0000; stroke-width:15; opacity:0.3;}
+                .in_conflict_margin    {stroke:#FF6600; stroke-width:15; opacity:0.3;}
+            </style>
+        </defs>
 
-    .inter_conflict        {fill:#FF0000; opacity:0.3;}
-    .inter_conflict_margin {fill:#FF6600; opacity:0.3;}
-    .in_conflict           {stroke:#FF0000; stroke-width:15; opacity:0.3;}
-    .in_conflict_margin    {stroke:#FF6600; stroke-width:15; opacity:0.3;}
-</style>
+        <!-- BG color -->
+        <rect x={-width0} y={-width0} width={w0d} height={h0d} fill=white stroke-width=0 />
+        <!-- Grids -->
+        {#each [...Array(145).keys()].map(x => x * 40) as t}
+            <path class={(t % 240)? "grid": "gridb"} d={`M${tick2ptd(t)} 0 v${h0}`} />
+        {/each}
+        {#each $stations.map(x => x.dist) as d}
+            <path class=grid d={`M0 ${hm2pt(d)} h${w0}`} />
+        {/each}
+ 
+        <!-- Time info -->
+        {#each [...Array(145).keys()].map(x => x * 40) as t}
+            <text x={tick2pt(t)} y={0 - 10}> {`${(t % 240)? "": tick2hr(t)}${tick2min(t)}`} </text>
+        {/each}
+
+        <!-- Line info -->
+        {#each [...Array(13).keys()].map(x => tick2ptd(x * 480)) as t}
+            {#each $stations as s}
+                <text x={t - 10} y={hm2pt(s.dist) + 6} text-anchor="end"> {s.name} </text>
+            {/each}
+            {#each $stations.filter((_, idx) => idx != $stations.length - 1) as s, idx}
+                {#if (s.n_track_inter == 1)}
+                    <path class="track" d={`M${t} ${hm2pt(s.dist)} v${hm2pt($stations[idx + 1].dist - s.dist)}`} />
+                {:else}
+                    <path class="track" d={`M${t + 2} ${hm2pt(s.dist)} v${hm2pt($stations[idx + 1].dist) - s.dist}`} />
+                    <path class="track" d={`M${t - 2} ${hm2pt(s.dist)} v${hm2pt($stations[idx + 1].dist) - s.dist}`} />
+                {/if}
+            {/each}
+            {#each $stations as s}
+                <circle class=station cx={t} cy={hm2pt(s.dist)} r=8 />
+                <text x={t} y={hm2pt(s.dist) + 5} font-size=12px font-weight="bold" text-anchor="middle" >
+                    {s.n_track_in}
+                </text>
+            {/each}
+        {/each}
+
+        <!-- Conflicts -->
+        {#each $inter_conflict as item}
+            <rect class=inter_conflict x={tick2pt(item.t1)} y={hm2pt(item.d1)} 
+                  width={tick2pt(item.t2 - item.t1)} height={hm2pt(item.d2 - item.d1)} />
+            <rect class=inter_conflict_margin x={tick2pt(item.t1) - 5} y={hm2pt(item.d1)} 
+                  width=5 height={hm2pt(item.d2 - item.d1)} />
+            <rect class=inter_conflict_margin x={tick2pt(item.t2)} y={hm2pt(item.d1)} 
+                  width=5  height={hm2pt(item.d2 - item.d1)} />
+        {/each}
+        {#each $in_conflict as item}
+            <path class=in_conflict
+                  d={`M${tick2pt(item.t1)} ${hm2pt(item.d)} h${tick2pt(item.t2 - item.t1)}`} />
+            <path class=in_conflict_margin
+                  d={`M${tick2pt(item.t1)} ${hm2pt(item.d)} h-5`} />
+            <path class=in_conflict_margin
+                  d={`M${tick2pt(item.t2)} ${hm2pt(item.d)} h5`} />
+        {/each}
+
+        <!-- Trains -->
+        {#each $trains as item}
+            <path class=train stroke={item.color}
+                d={item.coords.reduce((acc, x, idx) => `${acc} ${idx == 0? "M": "L"}${tick2pt(x.t)} ${hm2pt(x.d)}`, "")} />
+            {#each item.coords.reduce((acc, x, idx, arr) => {
+                    if ((idx < arr.length - 1) && (x.d != arr[idx + 1].d))
+                        return [...acc, {"t1": x.t, "t2": arr[idx + 1].t, "d1": x.d, "d2": arr[idx + 1].d}];
+                    else
+                        return acc; }, []).filter((_, idx) => idx % 3 == 0) as x}
+                <defs>
+                    <path id={`d${x.t1}${item.name}d`} 
+                        d={`M${tick2pt(x.t1)} ${hm2pt(x.d1)} L${tick2pt(x.t2)} ${hm2pt(x.d2)}`} />
+                </defs>
+                <text stroke={item.color} font-size=10px >
+                    <textPath startOffset="50%" href={`#d${x.t1}${item.name}d`}> {item.name} </textPath>
+                </text>
+            {/each}
+        {/each}
+    </svg>
+</div>

@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {train_types, trains, focus_idx, focus_type, stations, tick_range, view_hm} from './store';
+    import {train_types, trains, focus_idx, focus_type, stations, tick_range, view_hm, line_name} from './store';
     import {FormGroup, Input, Label, Button, ButtonGroup, Icon}                        from 'sveltestrap';
     import {Train}                                                                     from './train';
 
@@ -78,6 +78,14 @@
         }
     }
 
+    function download_svg () {
+        const svg_source = document.getElementById('main_svg').outerHTML
+        const link       = document.createElement('a');
+        link.download    = $line_name + "各級列車.svg";
+        link.href        = 'data:image/svg,' + encodeURIComponent('<?xml version="1.0" standalone="no"?> <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.0//EN" "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">' + svg_source);
+        link.click();  
+    }
+
 </script>
 
 <FormGroup >
@@ -136,6 +144,7 @@
         </Input>
     </div>
     <Button disabled={status == "V" || status == "M"} on:click={click_handler}> 確認 </Button>
+    <Button on:click={download_svg}> 輸出 </Button>
     <Button on:click={()=>window.open("https://github.com/xuanlutw/railway-time-diagram")}><Icon name="github" /></Button>
 </FormGroup>
 
