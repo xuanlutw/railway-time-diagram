@@ -1,6 +1,6 @@
 import {get}                    from 'svelte/store';
 import {stations, train_types}  from './store';
-import type {Tick, HM, Control} from './common';
+import type {Tick, HM, Control, Station} from './common';
 
 export class Train {
     type:        number;
@@ -66,11 +66,11 @@ export class Train {
         this.compute_coords();
     }
 
-    in_station(tick: Tick): Station {
+    in_station(tick: Tick): Station | "Nothing" {
         let station_idx = -1;
         this.coords.slice(0, -1).map((coord1, idx) => {
             const coord2 = this.coords[idx + 1];
-            if (coord1.t > tick || coord2.t <= tick)
+            if (coord1.t > tick || coord2.t < tick)
                 return;
             if (coord1.t == tick)
                 station_idx = coord1.idx;
@@ -82,7 +82,35 @@ export class Train {
         if (station_idx >= 0)
             return get(stations)[station_idx];
         else
-            return -1;
+            return "Nothing";
+    }
+
+    // From S station + D HM, do not need to parse direction
+    inter_station(tick: Tick): {"S": Station, "D": HM} | "Nothing" {
+        if (this.in_station(tick) != "Nothing")
+            return "Nothing";
+        let station_idx = -1;
+        let dist        = 0;
+        this.coords.slice(0, -1).map((coord1, idx) => {
+            const coord2 = this.coords[idx + 1];
+            if (coord1.t > tick || coord2.t < tick)
+                return;
+            station_idx = this.direction? coord1.idx: coord2.idx;
+            if ( this.stops[coord1.idx] &&  this.stops[coord2.idx])
+                dist = (tick - coord1.t) * get(train_types)[this.type].speed_ss[station_idx];
+            if (!this.stops[coord1.idx] &&  this.stops[coord2.idx])
+                dist = (tick - coord1.t) * get(train_types)[this.type].speed_ps[station_idx];
+            if ( this.stops[coord1.idx] && !this.stops[coord2.idx])
+                dist = (tick - coord1.t) * get(train_types)[this.type].speed_sp[station_idx];
+            if (!this.stops[coord1.idx] && !this.stops[coord2.idx])
+                dist = (tick - coord1.t) * get(train_types)[this.type].speed_pp[station_idx];
+            if (!this.direction)
+                dist = coord1.d - coord2.d - dist;
+        })
+        if (station_idx >= 0)
+            return {"S": get(stations)[station_idx], "D": dist};
+        else
+            return "Nothing";
     }
 
     compute_coords(): void {

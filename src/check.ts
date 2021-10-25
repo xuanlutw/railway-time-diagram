@@ -28,6 +28,7 @@ function comp_io_tick (trains: Train[], d1: HM, d2: HM): {"tick_i": Tick[], "tic
     return {"tick_i": tick_i, "tick_o": tick_o};
 }
 
+// This function compute all bi-single pair
 function comp_bi_single (trains: Train[], tick_i: Tick[], tick_o: Tick[], interval_cis: number, direction: boolean): {"bis_tick_i": Tick[], "bis_tick_o": Tick[], "bis_edge": (number[])[]} {
     const bis_tick_i = [];
     const bis_tick_o = [];
@@ -52,6 +53,29 @@ function comp_bi_single (trains: Train[], tick_i: Tick[], tick_o: Tick[], interv
     return {"bis_tick_i": bis_tick_i, "bis_tick_o": bis_tick_o, "bis_edge": bis_edge};
 }
 
+// This function check whether bi-single pair is bipart graph.
+function check_bi_signle_bipart (bis_edge: number[][]): {"conflict": {"idx1": number, "idx2": number}[], "color": number[]} {
+    const color = Array(bis_edge.length).fill(-1);
+    const color_it = (idx: number, c: number) => {
+        if (color[idx] != -1)
+            return;
+        color[idx] = c;
+        bis_edge[idx].map(x => color_it(x, c == 1? 0: 1));
+    }
+    const conflicts = [];
+    color.map((_, idx) => color_it(idx, 0));
+
+    color.map((x, idx1) => bis_edge[idx1].map(idx2 => {
+        if (idx1 <= idx2)
+            return
+        if (x == color[idx2])
+            conflicts.push({"idx1": idx1, "idx2": idx2});
+    }));
+    return {"conflict": conflicts,
+            "color": color};
+}
+
+// This function check the reverse train in the bi-single interval
 function check_bi_signle_exclusive (trains: Train[], tick_i: Tick[], tick_o: Tick[], bis_tick_i: Tick[], bis_tick_o: Tick[], direction: boolean, interval_trans: number): {"t1": Tick, "t2": Tick}[] {
     const conflicts = [];
     trains.map((item, idx1) => bis_tick_i.map((_, idx2) => {
@@ -69,46 +93,33 @@ function check_bi_signle_exclusive (trains: Train[], tick_i: Tick[], tick_o: Tic
     return conflicts;
 }
 
-function check_bi_signle_bipart (bis_edge: (number[])[]): {"idx1": number, "idx2": number}[] {
-    const color = Array(bis_edge.length).fill(-1);
-    const color_it = (idx: number, c: number) => {
-        if (color[idx] != -1)
-            return;
-        color[idx] = c;
-        bis_edge[idx].map(x => color_it(x, c == 1? 0: 1));
-    }
+function inter_check_double (trains: Train[], station1: Station, station2: Station): {"conflict": {"t1": Tick, "t2": Tick, "d1": HM, "d2": HM}[], "track": number[]} {
     const conflicts = [];
-    color.map((_, idx) => color_it(idx, 0));
-
-    color.map((x, idx1) => bis_edge[idx1].map(idx2 => {
-        if (idx1 <= idx2)
-            return
-        if (x == color[idx2])
-            conflicts.push({"idx1": idx1, "idx2": idx2});
-    }));
-    return conflicts;
-}
-
-function inter_check_double (trains: Train[], station1: Station, station2: Station): {"t1": Tick, "t2": Tick, "d1": HM, "d2": HM}[] {
-    const conflicts = [];
+    let   track     = Array(trains.length).fill(0);
     
     // Compute in and out ticks
     const {"tick_i": tick_i, "tick_o": tick_o} = comp_io_tick(trains, station1.dist, station2.dist);
 
     // Compute bi-single interval
-    [true, false].map(x => {
-        const {"bis_tick_i": bis_tick_i, "bis_tick_o": bis_tick_o, "bis_edge": bis_edge} 
-            = comp_bi_single(trains, tick_i, tick_o, station1.interval_cis, x);
-        check_bi_signle_bipart(bis_edge)
-            .map(({"idx1": idx1, "idx2": idx2}) => 
-                conflicts.push({"t1": Math.max(tick_i[idx1], tick_i[idx2]),
-                                "t2": Math.min(tick_o[idx1], tick_o[idx2]),
-                                "d1": station1.dist, "d2": station2.dist}))
-        check_bi_signle_exclusive (trains, tick_i, tick_o, bis_tick_i, bis_tick_o, x, station1.interval_trans)
-            .map(({"t1": t1, "t2": t2}) => 
-                conflicts.push({"t1": t1, "t2": t2, "d1": station1.dist, "d2": station2.dist}))
+    [true, false].map(direct => {
+        const {"bis_tick_i": bis_tick_i,
+               "bis_tick_o": bis_tick_o,
+               "bis_edge": bis_edge} = comp_bi_single(trains, tick_i, tick_o, station1.interval_cis, direct);
+        const {"conflict": conflict_pre,
+               "color": color} = check_bi_signle_bipart(bis_edge);
+        conflict_pre.map(({"idx1": idx1, "idx2": idx2}) => 
+            conflicts.push({"t1": Math.max(tick_i[idx1], tick_i[idx2]),
+                            "t2": Math.min(tick_o[idx1], tick_o[idx2]),
+                            "d1": station1.dist, "d2": station2.dist}));
+        track = track.map((x, idx) => (trains[idx].direction == direct)? (direct? (1 - color[idx]): color[idx]): x);
+        const conflict_pre_extra = check_bi_signle_exclusive(trains, tick_i, tick_o, bis_tick_i, bis_tick_o, direct, station1.interval_trans);
+        conflict_pre_extra.map(({"t1": t1, "t2": t2}) => 
+            conflicts.push({"t1": t1, "t2": t2, 
+                            "d1": station1.dist,
+                            "d2": station2.dist}));
     });
-    return conflicts;
+    return {"conflict": conflicts,
+            "track": track};
 }
 
 function inter_check_single (trains: Train[], station1: Station, station2: Station): {"t1": Tick, "t2": Tick, "d1": HM, "d2": HM}[] {
@@ -145,17 +156,31 @@ function inter_check_single (trains: Train[], station1: Station, station2: Stati
     return conflicts;
 }
 
-export function inter_check (trains: Train[], stations: Station[]): {"t1": Tick, "t2": Tick, "d1": HM, "d2": HM}[] {
+export function comp_inter_conflict (trains: Train[], stations: Station[]): {"t1": Tick, "t2": Tick, "d1": HM, "d2": HM}[] {
     if (trains.length <= 1)
         return [];
-    return stations.reduce((acc, x, idx) => {
-        if (idx == stations.length - 1)
-            return acc;
-        else if (x.n_track_inter == 1)
-            return [...acc, ...inter_check_single(trains, x, stations[idx + 1])];
-        else
-            return [...acc, ...inter_check_double(trains, x, stations[idx + 1])];
+    return stations.slice(0, -1).reduce((acc, s) => {
+        if (s.n_track_inter == 1)
+            return [...acc, ...inter_check_single(trains, s, stations[s.idx + 1])];
+        else {
+            const {"conflict": conflict} = inter_check_double(trains, s, stations[s.idx + 1]);
+            return [...acc, ...conflict];
+        }
     }, []);
+}
+
+export function comp_inter_track (trains: Train[], stations: Station[]): number[][] {
+    if (trains.length <= 1)
+        return [];
+    return stations.slice(0, -1).map(s => {
+        if (s.n_track_inter == 1)
+            return Array(Train.length).fill(0);
+        else {                       
+            const {"track": track} = inter_check_double(trains, s, stations[s.idx + 1]);
+            console.log(s.name, track)
+            return track;
+        }
+    });
 }
 
 // In station check
@@ -178,7 +203,6 @@ function comp_in_check_pre_station (ticks: Tick[], trains: Train[], station: Sta
             }
         })
     });
-
     return count;
 }
 
@@ -213,7 +237,6 @@ function comp_in_track_station (ticks: Tick[], trains: Train[], count: number[][
             track[idx] = diff([...Array(station.n_track_in).keys()], track_assigned)[0];
         })
     });
-
     return track;
 }
 
