@@ -1,5 +1,5 @@
 <script lang="ts">
-    import {train_types, trains, focus_idx, focus_type, stations, tick_range, view_hm, line_name, module_name} from './store';
+    import {train_types, trains, focus_idx, focus_type, stations, tick_range, view_hm, line_name, module_name, show_item} from './store';
     import {FormGroup, Input, Label, Button, ButtonGroup, Icon}                        from 'sveltestrap';
     import {Train}                                                                     from './train';
 
@@ -92,6 +92,12 @@
         navigator.clipboard.writeText(self_url + "?module=" + $module_name + "&train_info=" + train_info)
     }
 
+    function start_simu () {
+        const train_info = btoa(JSON.stringify($trains.map(x => x.extract()))) // base64 encoding
+        const self_url   = window.location.href.split('?')[0]
+        window.open(self_url + "?show_item=simu&module=" + $module_name + "&train_info=" + train_info, '_blank').focus();
+    }
+
 </script>
 
 <FormGroup >
@@ -149,12 +155,13 @@
     </div>
     <Button disabled={status == "V" || status == "M"} on:click={click_handler}> 確認 </Button>
     <ButtonGroup name="select" >
-        <Button on:click={download_svg}> 輸出 </Button>
-        <Button on:click={copy_link}> 複製連結 </Button>
+        <Button on:click={download_svg}> 輸出     </Button>
+        <Button on:click={copy_link}   > 複製連結 </Button>
+        <Button on:click={start_simu}  > 模擬     </Button>
     </ButtonGroup>
     <Button on:click={()=>window.open("https://github.com/xuanlutw/railway-time-diagram")}><Icon name="github" /></Button>
 </FormGroup>
 
 <style>
-    .WTF {width: 80pt; display: inline-block;}
+    .WTF {width: 70pt; display: inline-block;}
 </style>

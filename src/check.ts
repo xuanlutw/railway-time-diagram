@@ -92,7 +92,7 @@ function check_bi_signle_exclusive (trains: Train[], tick_i: Tick[], tick_o: Tic
     return conflicts;
 }
 
-function inter_check_double (trains: Train[], station1: Station, station2: Station): {"conflict": {"t1": Tick, "t2": Tick, "s1": station, "s2": station}[], "track": number[]} {
+function inter_check_double (trains: Train[], station1: Station, station2: Station): {"conflict": {"t1": Tick, "t2": Tick, "s1": Station, "s2": Station}[], "track": number[]} {
     const conflicts = [];
     let   track     = Array(trains.length).fill(0);
     
@@ -120,7 +120,7 @@ function inter_check_double (trains: Train[], station1: Station, station2: Stati
             "track": track};
 }
 
-function inter_check_single (trains: Train[], station1: Station, station2: Station): {"t1": Tick, "t2": Tick, "s1": station, "s2": station}[] {
+function inter_check_single (trains: Train[], station1: Station, station2: Station): {"t1": Tick, "t2": Tick, "s1": Station, "s2": Station}[] {
     const conflicts = [];
     
     // Compute in and out ticks
@@ -208,7 +208,7 @@ function comp_in_conflict_station (ticks: Tick[], count: number[][], station: St
     return count.reduce((acc, x, idx) => 
         (x.length <= station.n_track_in)? acc:
         [...acc, {"t1": ticks[idx], "t2": ticks[idx + 1], "s": station}],
-        <{"t1": Tick, "t2": Tick, "s": station}[]>[]);
+        <{"t1": Tick, "t2": Tick, "s": Station}[]>[]);
 }
 
 export function comp_in_conflict (trains: Train[], stations: Station[]): {"t1": Tick, "t2": Tick, "s": Station}[] {

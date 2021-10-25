@@ -22,11 +22,10 @@ const line_info = readable(<Line>{"name": "", "stations": [], "train_types": []}
 
     let rest  = await fetch("train_info_" + module_name + ".json");
     let infot = await rest.json();
-
-    if (urlParams.has('train_info')) {
+    if (urlParams.has('show_item') && urlParams.get('show_item') == "simu")
+        show_item.update(x => false);
+    if (urlParams.has('train_info'))
         infot = JSON.parse(atob(urlParams.get('train_info')))
-        // console.log(infot)
-    }
     trains.update(x => {
         infot.map(t => x.push(new Train(t.name, t.type, t.dep_s, t.arr_s, t.dep_t, t.stop_t)));
         return x})
@@ -38,9 +37,13 @@ export const stations    = derived(line_info, x => x.stations);
 export const train_types = derived(line_info, x => x.train_types);
 
 // Window Infos
+export const show_item  = writable(true); // true: time diagram, false: simulation
+// For diagram
 export const tick_range = writable(<Tick[]>[1200, 1680]);
 export const view_tick  = derived(tick_range, x => x[0]);
 export const view_hm    = writable(<HM>-10);
+// For simulator
+export const tick_simu  = writable(<Tick[]>[1200]);
 
 // Conflict Infos
 export const inter_conflict = derived([trains, stations], ([a, b]) => comp_inter_conflict(a, b));

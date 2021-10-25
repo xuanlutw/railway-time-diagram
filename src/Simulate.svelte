@@ -1,10 +1,8 @@
 <script lang="ts">
-    import {tick2sec, tick2min, tick2hr}                         from './common';
-    import type {Tick, HM, Control}                              from './common';
-    import {stations, trains, focus_idx, focus_type, tick_range} from './store';
-    import {inter_conflict, inter_track}                         from './store';
-    import {in_conflict, in_track}                               from './store';
-    import {Input}                        from 'sveltestrap';
+    import type {HM}                     from './common';
+    import {stations, trains, tick_simu} from './store';
+    import {inter_conflict, inter_track} from './store';
+    import {in_conflict, in_track}       from './store';
 
     const h_half       = 200;
     const h            = 2 * h_half;
@@ -30,7 +28,6 @@
     let station_y_in    = (station, track) => d_in_half    * (station.n_track_in    - 2 * track - (station.n_track_in % 2));
     let station_y_inter = (station, track) => d_inter_half * (station.n_track_inter - 2 * track - (station.n_track_inter % 2));
 
-    let tick_simu = 1200;
     function wheel_handler (event: any): void {
         event.preventDefault();
         let delta_tick: number;
@@ -43,24 +40,19 @@
             delta_tick = Math.sign(event.deltaX) * 4;
             delta_hm   = Math.sign(event.deltaY) * 15;
         }
-        tick_simu += delta_tick;
-        view_w0   += delta_hm;
+        $tick_simu[0] += delta_tick;
+        view_w0    += delta_hm;
         if ($stations.length > 0 && view_w0 > station_x1($stations.at(-1)))
-            view_w0 = station_x1($stations.at(-1))
+            view_w0 = station_x1($stations.at(-1));
         if (view_w0 < -10)
-            view_w0 = -10
+            view_w0 = -10;
     }
 </script>
 
 <svelte:window bind:innerWidth ={w_width}
                bind:innerHeight={w_height}/>
 
-<Input
-    type="number"
-    bind:value={tick_simu}
-/>
-
-<div on:wheel    ={wheel_handler}>
+<div on:wheel ={wheel_handler}>
     <svg width={width} height={height} viewBox={`${view_w0} ${-h_half} ${width} ${h}`}>
         <!-- Stations -->
         {#each $stations as s}
@@ -109,7 +101,7 @@
 
         <!-- In station conflict -->
         {#each $in_conflict as conflict}
-            {#if conflict.t1 <= tick_simu && tick_simu < conflict.t2}
+            {#if conflict.t1 <= $tick_simu[0] && $tick_simu[0] < conflict.t2}
                 <rect class=in_conflict x={station_x1(conflict.s)} y={-conflict_w / 2} 
                       width={station_l} height={conflict_w} />
             {/if}
@@ -117,14 +109,14 @@
 
         <!-- Inter station conflict -->
         {#each $inter_conflict as conflict}
-            {#if conflict.t1 <= tick_simu && tick_simu < conflict.t2}
+            {#if conflict.t1 <= $tick_simu[0] && $tick_simu[0] < conflict.t2}
                 <rect class=inter_conflict x={station_x2(conflict.s1)} y={-conflict_w / 2} 
                       width={hm2pt(conflict.s2.dist - conflict.s1.dist)} height={conflict_w} />
             {/if}
         {/each}
 
         <!-- In station train -->
-        {#each $trains.map(x => x.in_station(tick_simu)) as s, idx}
+        {#each $trains.map(x => x.in_station($tick_simu[0])) as s, idx}
             {#if s != "Nothing"}
                 <text stroke={$trains[idx].color} text-anchor="middle" dominant-baseline="middle" 
                     x={station_x1(s) + station_l * 0.5}
@@ -135,7 +127,7 @@
         {/each}
 
         <!-- Inter station train -->
-        {#each $trains.map(x => x.inter_station(tick_simu)) as s, idx}
+        {#each $trains.map(x => x.inter_station($tick_simu[0])) as s, idx}
             {#if s != "Nothing"}
                 <text stroke={$trains[idx].color} text-anchor="middle" dominant-baseline="middle"
                     x={station_x2(s.S) + hm2pt(s.D)}

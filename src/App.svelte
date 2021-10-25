@@ -1,9 +1,9 @@
 <script lang="ts">
-    import {line_name} from './store';
-    import Render      from './Render.svelte';
-    import Slider      from './Slider.svelte';
-    import Selector    from './Selector.svelte';
-    import Simulate    from './Simulate.svelte';
+    import {line_name, show_item} from './store';
+    import Render                 from './Render.svelte';
+    import Slider                 from './Slider.svelte';
+    import Selector               from './Selector.svelte';
+    import Simulate               from './Simulate.svelte';
 </script>
 
 <svelte:head>
@@ -16,13 +16,18 @@
     <h1 class=left> {$line_name}各級列車 </h1>
 
     <div class=right>
-        <Selector />
+        {#if $show_item}
+            <Selector />
+        {/if}
     </div>
 </div>
 
-<Render />
+{#if $show_item}
+    <Render />
+{:else}
+    <Simulate />
+{/if}
 <Slider />
-<Simulate />
 
 <style>
     .out {

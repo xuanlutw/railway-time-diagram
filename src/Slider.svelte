@@ -1,7 +1,7 @@
 <script lang="ts">
-    import {tick2min, tick2hr} from './common';
-    import {tick_range}        from './store';
-    import RangeSlider         from "../../svelte-range-slider-pips/src/RangeSlider.svelte";
+    import {tick2hr, tick2min}                from "./common";
+    import {show_item, tick_range, tick_simu} from "./store";
+    import RangeSlider from "../../svelte-range-slider-pips/src/RangeSlider.svelte";
 
     let tick_range_o = [0, 0];
     $: {
@@ -17,9 +17,18 @@
     }
 </script>
 
-<RangeSlider float
-    range pushy bind:values={$tick_range}
-    formatter={x => `${tick2hr(x)}${tick2min(x)}`}
-    pips step={40} pipstep={6}
-    all='label'
-    min={0} max={5760}/>
+{#if $show_item}
+    <RangeSlider float
+        range pushy bind:values={$tick_range}
+        formatter={x => `${tick2hr(x)}${tick2min(x)}`}
+        pips step={40} pipstep={6}
+        all='label'
+        min={0} max={5760}/>
+{:else}
+    <RangeSlider float
+        bind:values={$tick_simu}
+        formatter={x => `${tick2hr(x)}${tick2min(x)}`}
+        pips step={1} pipstep={240}
+        all='label'
+        min={0} max={5760}/>
+{/if}
