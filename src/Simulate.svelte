@@ -7,8 +7,8 @@
     const h_half       = 200;
     const h            = 2 * h_half;
     const hm2pt        = (x: HM) => x * 5;
-    const d_in_half    = 8;
-    const d_inter_half = 8;
+    const d_in         = 16;
+    const d_inter      = 16;
     const station_l    = 50;
     const h_text       = 100;
     const conflict_w   = 100;
@@ -23,10 +23,10 @@
     $: width  = w_width - 20;
     $: height = h;
 
-    let station_x1      = (station)        => station_l * (station.idx + 1) + hm2pt(station.dist);
-    let station_x2      = (station)        => station_l * (station.idx + 2) + hm2pt(station.dist);
-    let station_y_in    = (station, track) => d_in_half    * (station.n_track_in    - 2 * track - (station.n_track_in % 2));
-    let station_y_inter = (station, track) => d_inter_half * (station.n_track_inter - 2 * track - (station.n_track_inter % 2));
+    let station_x1    = (station)   => station_l * (station.idx + 1) + hm2pt(station.dist);
+    let station_x2    = (station)   => station_l * (station.idx + 2) + hm2pt(station.dist);
+    let track_y_in    = (track_num) => d_in * (((track_num - track_num % 2) / 2) * ((track_num % 2)? -1: 1) - track_num % 2);
+    let track_y_inter = (track_num) => d_inter * -track_num;
 
     function wheel_handler (event: any): void {
         event.preventDefault();
@@ -58,7 +58,7 @@
         {#each $stations as s}
             {#each [...Array(s.n_track_in).keys()] as t}
                 <path class=track_in
-                    d={`M${station_x1(s) + in_shrink} ${station_y_in(s, t)}
+                    d={`M${station_x1(s) + in_shrink} ${track_y_in(t)}
                         h${station_l - 2 * in_shrink}`} />
             {/each}
             <text text-anchor="middle"
@@ -72,7 +72,7 @@
         {#each $stations.slice(0, -1) as s, i}
             {#each [...Array(s.n_track_inter).keys()] as t}
                 <path class=track_inter
-                    d={`M${station_x2(s) + inter_shrink} ${station_y_inter(s, t)}
+                    d={`M${station_x2(s) + inter_shrink} ${track_y_inter(t)}
                         h${hm2pt($stations[i + 1].dist - s.dist) - 2 * inter_shrink}`} />
             {/each}
         {/each}
@@ -82,8 +82,8 @@
             {#each [...Array(s.n_track_in).keys()] as t_in}
                 {#each [...Array(s.n_track_inter).keys()] as t_inter}
                     <path class=track_connect
-                        d={`M${station_x2(s) - in_shrink}    ${station_y_in(s, t_in)}
-                            L${station_x2(s) + inter_shrink} ${station_y_inter(s, t_inter)}`} />
+                        d={`M${station_x2(s) - in_shrink}    ${track_y_in(t_in)}
+                            L${station_x2(s) + inter_shrink} ${track_y_inter(t_inter)}`} />
                 {/each}
             {/each}
         {/each}
@@ -93,8 +93,8 @@
             {#each [...Array(s.n_track_in).keys()] as t_in}
                 {#each [...Array($stations[s.idx - 1].n_track_inter).keys()] as t_inter}
                     <path class=track_connect
-                        d={`M${station_x1(s) + in_shrink}    ${station_y_in(s, t_in)}
-                            L${station_x1(s) - inter_shrink} ${station_y_inter($stations[s.idx - 1], t_inter)}`} />
+                        d={`M${station_x1(s) + in_shrink}    ${track_y_in(t_in)}
+                            L${station_x1(s) - inter_shrink} ${track_y_inter(t_inter)}`} />
                 {/each}
             {/each}
         {/each}
@@ -120,7 +120,7 @@
             {#if s != "Nothing"}
                 <text stroke={$trains[idx].color} text-anchor="middle" dominant-baseline="middle" 
                     x={station_x1(s) + station_l * 0.5}
-                    y={station_y_in(s, $in_track[s.idx][idx])}>
+                    y={track_y_in($in_track[s.idx][idx])}>
                     {$trains[idx].name}
                 </text>
             {/if}
@@ -131,7 +131,7 @@
             {#if s != "Nothing"}
                 <text stroke={$trains[idx].color} text-anchor="middle" dominant-baseline="middle"
                     x={station_x2(s.S) + hm2pt(s.D)}
-                    y={station_y_inter(s.S, $inter_track[s.S.idx][idx])}>
+                    y={track_y_inter($inter_track[s.S.idx][idx])}>
                     {$trains[idx].name}
                 </text>
             {/if}

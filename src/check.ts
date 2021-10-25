@@ -92,6 +92,7 @@ function check_bi_signle_exclusive (trains: Train[], tick_i: Tick[], tick_o: Tic
     return conflicts;
 }
 
+// Follow the direction prefer 0
 function inter_check_double (trains: Train[], station1: Station, station2: Station): {"conflict": {"t1": Tick, "t2": Tick, "s1": Station, "s2": Station}[], "track": number[]} {
     const conflicts = [];
     let   track     = Array(trains.length).fill(0);
@@ -110,7 +111,7 @@ function inter_check_double (trains: Train[], station1: Station, station2: Stati
             conflicts.push({"t1": Math.max(tick_i[idx1], tick_i[idx2]),
                             "t2": Math.min(tick_o[idx1], tick_o[idx2]),
                             "s1": station1, "s2": station2}));
-        track = track.map((x, idx) => (trains[idx].direction == direct)? (direct? (1 - color[idx]): color[idx]): x);
+        track = track.map((x, idx) => (trains[idx].direction == direct)? (direct? color[idx]: (1 - color[idx])): x);
         const conflict_pre_extra = check_bi_signle_exclusive(trains, tick_i, tick_o, bis_tick_i, bis_tick_o, direct, station1.interval_trans);
         conflict_pre_extra.map(({"t1": t1, "t2": t2}) => 
             conflicts.push({"t1": t1, "t2": t2, 
@@ -220,6 +221,7 @@ export function comp_in_conflict (trains: Train[], stations: Station[]): {"t1": 
     return conflicts.reduce((acc, x) => [...acc, ...x], []);
 }
 
+// Follow the direction prefer 0
 function comp_in_track_station (ticks: Tick[], trains: Train[], count: number[][], station: Station): number[] {
     let track = Array(trains.length).fill(-1);
     // Assign Track
@@ -231,9 +233,16 @@ function comp_in_track_station (ticks: Tick[], trains: Train[], count: number[][
             const track_assigned = trains_in_idx.map(x => track[x]).filter(x => x != -1);
             if (track_assigned.length == station.n_track_in)    // No need assign conflic train
                 return;
-            track[idx] = diff([...Array(station.n_track_in).keys()], track_assigned)[0];
+            const remain_track = diff([...Array(station.n_track_in).keys()], track_assigned);
+            if (trains[idx].direction && remain_track.includes(0))
+                track[idx] = 0;
+            else if (!trains[idx].direction && remain_track.includes(1))
+                track[idx] = 1;
+            else
+                track[idx] = remain_track[0];
         })
     });
+    track = track.map((x, idx) => (x == -1)? (trains[idx].direction? 0: 1): x); // If x has no track, i.e., conflict, assign it to default.
     return track;
 }
 
