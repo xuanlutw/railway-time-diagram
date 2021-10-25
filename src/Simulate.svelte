@@ -12,7 +12,8 @@
     const d_in_half    = 10;
     const d_inter_half = 10;
     const station_l    = 60;
-    const h_text       = -100;
+    const h_text       = -120;
+    const conflict_w   = 200
 
     let w_width  = 100;
     let w_height = 100;
@@ -104,10 +105,29 @@
                 </text>
             {/if}
         {/each}
+
+        <!-- In station conflict -->
+        {#each $in_conflict as conflict}
+            {#if conflict.t1 <= tick_simu && tick_simu < conflict.t2}
+                <rect class=in_conflict x={station_x1(conflict.s)} y={-conflict_w / 2} 
+                      width={station_l} height={conflict_w} />
+            {/if}
+        {/each}
+
+        <!-- Inter station conflict -->
+        {#each $inter_conflict as conflict}
+            {#if conflict.t1 <= tick_simu && tick_simu < conflict.t2}
+                <rect class=inter_conflict x={station_x2(conflict.s1)} y={-conflict_w / 2} 
+                      width={hm2pt(conflict.s2.dist - conflict.s1.dist)} height={conflict_w} />
+            {/if}
+        {/each}
     </svg>
 </div>
 
 <style>
     .track_in    {stroke:#CCCCCC; stroke-width:4; fill:none;}
     .track_inter {stroke:#CCCCCC; stroke-width:4; fill:none;}
+
+    .inter_conflict {fill:#FF0000; opacity:0.3;}
+    .in_conflict    {fill:#FF0000; opacity:0.3;}
 </style>

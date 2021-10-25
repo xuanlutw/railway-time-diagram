@@ -187,20 +187,20 @@
  
         <!-- Conflicts -->
         {#each $inter_conflict as item}
-            <rect class=inter_conflict x={tick2pt(item.t1)} y={hm2pt(item.d1)} 
-                  width={tick2pt(item.t2 - item.t1)} height={hm2pt(item.d2 - item.d1)} />
-            <rect class=inter_conflict_margin x={tick2pt(item.t1) - 5} y={hm2pt(item.d1)} 
-                  width=5 height={hm2pt(item.d2 - item.d1)} />
-            <rect class=inter_conflict_margin x={tick2pt(item.t2)} y={hm2pt(item.d1)} 
-                  width=5  height={hm2pt(item.d2 - item.d1)} />
+            <rect class=inter_conflict x={tick2pt(item.t1)} y={hm2pt(item.s1.dist)} 
+                  width={tick2pt(item.t2 - item.t1)} height={hm2pt(item.s2.dist - item.s1.dist)} />
+            <rect class=inter_conflict_margin x={tick2pt(item.t1) - 5} y={hm2pt(item.s1.dist)} 
+                  width=5 height={hm2pt(item.s2.dist - item.s1.dist)} />
+            <rect class=inter_conflict_margin x={tick2pt(item.t2)} y={hm2pt(item.s1.dist)} 
+                  width=5 height={hm2pt(item.s2.dist - item.s1.dist)} />
         {/each}
         {#each $in_conflict as item}
             <path class=in_conflict
-                  d={`M${tick2pt(item.t1)} ${hm2pt(item.d)} h${tick2pt(item.t2 - item.t1)}`} />
+                  d={`M${tick2pt(item.t1)} ${hm2pt(item.s.dist)} h${tick2pt(item.t2 - item.t1)}`} />
             <path class=in_conflict_margin
-                  d={`M${tick2pt(item.t1)} ${hm2pt(item.d)} h-5`} />
+                  d={`M${tick2pt(item.t1)} ${hm2pt(item.s.dist)} h-5`} />
             <path class=in_conflict_margin
-                  d={`M${tick2pt(item.t2)} ${hm2pt(item.d)} h5`} />
+                  d={`M${tick2pt(item.t2)} ${hm2pt(item.s.dist)} h5`} />
         {/each}
 
         <!-- Train highlight -->
@@ -359,20 +359,20 @@
 
         <!-- Conflicts -->
         {#each $inter_conflict as item}
-            <rect class=inter_conflict x={tick2pt(item.t1)} y={hm2pt(item.d1)} 
-                  width={tick2pt(item.t2 - item.t1)} height={hm2pt(item.d2 - item.d1)} />
-            <rect class=inter_conflict_margin x={tick2pt(item.t1) - 5} y={hm2pt(item.d1)} 
-                  width=5 height={hm2pt(item.d2 - item.d1)} />
-            <rect class=inter_conflict_margin x={tick2pt(item.t2)} y={hm2pt(item.d1)} 
-                  width=5  height={hm2pt(item.d2 - item.d1)} />
+            <rect class=inter_conflict x={tick2pt(item.t1)} y={hm2pt(item.s1.dist)} 
+                  width={tick2pt(item.t2 - item.t1)} height={hm2pt(item.s2.dist - item.s1.dist)} />
+            <rect class=inter_conflict_margin x={tick2pt(item.t1) - 5} y={hm2pt(item.s1.dist)} 
+                  width=5 height={hm2pt(item.s2.dist - item.s1.dist)} />
+            <rect class=inter_conflict_margin x={tick2pt(item.t2)} y={hm2pt(item.s1.dist)} 
+                  width=5 height={hm2pt(item.s2.dist - item.s1.dist)} />
         {/each}
         {#each $in_conflict as item}
             <path class=in_conflict
-                  d={`M${tick2pt(item.t1)} ${hm2pt(item.d)} h${tick2pt(item.t2 - item.t1)}`} />
+                  d={`M${tick2pt(item.t1)} ${hm2pt(item.s.dist)} h${tick2pt(item.t2 - item.t1)}`} />
             <path class=in_conflict_margin
-                  d={`M${tick2pt(item.t1)} ${hm2pt(item.d)} h-5`} />
+                  d={`M${tick2pt(item.t1)} ${hm2pt(item.s.dist)} h-5`} />
             <path class=in_conflict_margin
-                  d={`M${tick2pt(item.t2)} ${hm2pt(item.d)} h5`} />
+                  d={`M${tick2pt(item.t2)} ${hm2pt(item.s.dist)} h5`} />
         {/each}
 
         <!-- Trains -->

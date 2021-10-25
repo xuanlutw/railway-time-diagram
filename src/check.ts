@@ -83,7 +83,6 @@ function check_bi_signle_exclusive (trains: Train[], tick_i: Tick[], tick_o: Tic
             return;
         if (item.direction == direction)
             return;
-        console.log(direction, bis_tick_i, item);
         const case1 = (tick_i[idx1] >= bis_tick_o[idx2] + interval_trans);
         const case2 = (bis_tick_i[idx2] >= tick_o[idx1] + interval_trans);
         if (!case1 && !case2)
@@ -93,7 +92,7 @@ function check_bi_signle_exclusive (trains: Train[], tick_i: Tick[], tick_o: Tic
     return conflicts;
 }
 
-function inter_check_double (trains: Train[], station1: Station, station2: Station): {"conflict": {"t1": Tick, "t2": Tick, "d1": HM, "d2": HM}[], "track": number[]} {
+function inter_check_double (trains: Train[], station1: Station, station2: Station): {"conflict": {"t1": Tick, "t2": Tick, "s1": station, "s2": station}[], "track": number[]} {
     const conflicts = [];
     let   track     = Array(trains.length).fill(0);
     
@@ -110,19 +109,18 @@ function inter_check_double (trains: Train[], station1: Station, station2: Stati
         conflict_pre.map(({"idx1": idx1, "idx2": idx2}) => 
             conflicts.push({"t1": Math.max(tick_i[idx1], tick_i[idx2]),
                             "t2": Math.min(tick_o[idx1], tick_o[idx2]),
-                            "d1": station1.dist, "d2": station2.dist}));
+                            "s1": station1, "s2": station2}));
         track = track.map((x, idx) => (trains[idx].direction == direct)? (direct? (1 - color[idx]): color[idx]): x);
         const conflict_pre_extra = check_bi_signle_exclusive(trains, tick_i, tick_o, bis_tick_i, bis_tick_o, direct, station1.interval_trans);
         conflict_pre_extra.map(({"t1": t1, "t2": t2}) => 
             conflicts.push({"t1": t1, "t2": t2, 
-                            "d1": station1.dist,
-                            "d2": station2.dist}));
+                            "s1": station1, "s2": station2}));
     });
     return {"conflict": conflicts,
             "track": track};
 }
 
-function inter_check_single (trains: Train[], station1: Station, station2: Station): {"t1": Tick, "t2": Tick, "d1": HM, "d2": HM}[] {
+function inter_check_single (trains: Train[], station1: Station, station2: Station): {"t1": Tick, "t2": Tick, "s1": station, "s2": station}[] {
     const conflicts = [];
     
     // Compute in and out ticks
@@ -142,7 +140,7 @@ function inter_check_single (trains: Train[], station1: Station, station2: Stati
             if (!case1 && !case2)
                 conflicts.push({"t1": Math.max(tick_i[idx1], tick_i[idx2]),
                                 "t2": Math.min(tick_o[idx1], tick_o[idx2]),
-                                "d1": station1.dist, "d2": station2.dist});
+                                "s1": station1, "s2": station2});
         }
         if (trains[idx1].direction != trains[idx2].direction) {
             const case1 = (tick_i[idx1] >= tick_o[idx2] + station1.interval_trans);
@@ -150,13 +148,13 @@ function inter_check_single (trains: Train[], station1: Station, station2: Stati
             if (!case1 && !case2)
                 conflicts.push({"t1": Math.max(tick_i[idx1], tick_i[idx2]),
                                 "t2": Math.min(tick_o[idx1], tick_o[idx2]),
-                                "d1": station1.dist, "d2": station2.dist});
+                                "s1": station1, "s2": station2});
         }
     }));
     return conflicts;
 }
 
-export function comp_inter_conflict (trains: Train[], stations: Station[]): {"t1": Tick, "t2": Tick, "d1": HM, "d2": HM}[] {
+export function comp_inter_conflict (trains: Train[], stations: Station[]): {"t1": Tick, "t2": Tick, "s1": Station, "s2": Station}[] {
     if (trains.length <= 1)
         return [];
     return stations.slice(0, -1).reduce((acc, s) => {
@@ -177,7 +175,6 @@ export function comp_inter_track (trains: Train[], stations: Station[]): number[
             return Array(Train.length).fill(0);
         else {                       
             const {"track": track} = inter_check_double(trains, s, stations[s.idx + 1]);
-            console.log(s.name, track)
             return track;
         }
     });
@@ -206,15 +203,15 @@ function comp_in_check_pre_station (ticks: Tick[], trains: Train[], station: Sta
     return count;
 }
 
-function comp_in_conflict_station (ticks: Tick[], count: number[][], station: Station): {"t1": Tick, "t2": Tick, "d": HM}[] {
+function comp_in_conflict_station (ticks: Tick[], count: number[][], station: Station): {"t1": Tick, "t2": Tick, "s": Station}[] {
     // Check Conflict 
     return count.reduce((acc, x, idx) => 
         (x.length <= station.n_track_in)? acc:
-        [...acc, {"t1": ticks[idx], "t2": ticks[idx + 1], "d": station.dist}],
-        <{"t1": Tick, "t2": Tick, "d": HM}[]>[]);
+        [...acc, {"t1": ticks[idx], "t2": ticks[idx + 1], "s": station}],
+        <{"t1": Tick, "t2": Tick, "s": station}[]>[]);
 }
 
-export function comp_in_conflict (trains: Train[], stations: Station[]): {"t1": Tick, "t2": Tick, "d": HM}[] {
+export function comp_in_conflict (trains: Train[], stations: Station[]): {"t1": Tick, "t2": Tick, "s": Station}[] {
     const ticks = get_ticks(trains)
     const conflicts = stations.map(station => {
         const count = comp_in_check_pre_station(ticks, trains, station);
