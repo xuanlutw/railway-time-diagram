@@ -1,6 +1,7 @@
 <script lang="ts">
     import {tick2hr, tick2min}                from "./common";
     import {show_item, tick_range, tick_simu} from "./store";
+    import {Button, Icon}                     from 'sveltestrap';
     import RangeSlider from "../../svelte-range-slider-pips/src/RangeSlider.svelte";
 
     let tick_range_o = [0, 0];
@@ -15,6 +16,13 @@
             tick_range_o = $tick_range;
         }
     }
+
+    let status = false;
+    setInterval(() => {
+        if (status)
+            $tick_simu[0] += 1
+    }, 300)
+
 </script>
 
 {#if $show_item}
@@ -25,6 +33,7 @@
         all='label'
         min={0} max={5760}/>
 {:else}
+    <Button color="primary" on:click={() => status = !status}> <Icon name={status? "stop": "play"} /> </Button>
     <RangeSlider float
         bind:values={$tick_simu}
         formatter={x => `${tick2hr(x)}${tick2min(x)}`}
