@@ -6,14 +6,14 @@
 
     const h_half       = 200;
     const h            = 2 * h_half;
-    const hm2pt        = (x: HM) => x * 5;
+    const hm2pt        = (x: HM) => x * 6;
     const d_in         = 16;
     const d_inter      = 16;
-    const station_l    = 50;
+    const station_l    = 60;
     const h_text       = 100;
     const conflict_w   = 100;
-    const in_shrink    = 10;
-    const inter_shrink = 0;
+    const in_shrink    = 6;
+    const inter_shrink = 6;
 
     let w_width  = 100;
     let w_height = 100;
@@ -55,11 +55,21 @@
 <div on:wheel ={wheel_handler}>
     <svg width={width} height={height} viewBox={`${view_w0} ${-h_half} ${width} ${h}`}>
         <!-- Stations -->
-        {#each $stations as s}
+        {#each $stations as s, idx}
             {#each [...Array(s.n_track_in).keys()] as t}
-                <path class=track_in
-                    d={`M${station_x1(s) + in_shrink} ${track_y_in(t)}
-                        h${station_l - 2 * in_shrink}`} />
+                {#if idx == 0}
+                    <path class=track_in
+                        d={`M${station_x1(s)                              } ${track_y_in(t)}
+                            h${station_l - 1 * parseInt(t / 2) * in_shrink}`} />
+                {:else if idx == $stations.length - 1}
+                    <path class=track_in
+                        d={`M${station_x1(s) + parseInt(t / 2) * in_shrink} ${track_y_in(t)}
+                            h${station_l - 1 * parseInt(t / 2) * in_shrink}`} />
+                {:else}
+                    <path class=track_in
+                        d={`M${station_x1(s) + parseInt(t / 2) * in_shrink} ${track_y_in(t)}
+                            h${station_l - 2 * parseInt(t / 2) * in_shrink}`} />
+                {/if}
             {/each}
             <text text-anchor="middle"
                 x={station_x1(s) + station_l * 0.5}
@@ -79,23 +89,63 @@
 
         <!-- Right track connection -->
         {#each $stations.slice(0, -1) as s, i}
-            {#each [...Array(s.n_track_in).keys()] as t_in}
-                {#each [...Array(s.n_track_inter).keys()] as t_inter}
-                    <path class=track_connect
-                        d={`M${station_x2(s) - in_shrink}    ${track_y_in(t_in)}
-                            L${station_x2(s) + inter_shrink} ${track_y_inter(t_inter)}`} />
-                {/each}
+            <!-- Outside -->
+            <path class=track_connect
+                d={`M${station_x2(s) + inter_shrink} ${track_y_inter(0)}
+                    L${station_x2(s)               } ${track_y_in(0)}`} />
+            {#if s.n_track_inter > 1}
+                <path class=track_connect
+                    d={`M${station_x2(s) + inter_shrink} ${track_y_inter(1)}
+                        L${station_x2(s)               } ${track_y_in(0)}`} />
+            {/if}
+            {#if s.n_track_in > 1}
+                <path class=track_connect
+                    d={`M${station_x2(s) + inter_shrink} ${track_y_inter(0)}
+                        L${station_x2(s)               } ${track_y_in(1)}`} />
+            {/if}
+            {#if s.n_track_inter > 1 && s.n_track_in > 1}
+                <path class=track_connect
+                    d={`M${station_x2(s) + inter_shrink} ${track_y_inter(1)}
+                        L${station_x2(s)               } ${track_y_in(1)}`} />
+            {/if}
+            <!-- Inside -->
+            {#each [...Array(s.n_track_in).keys()] as t}
+                <path class=track_connect
+                    d={`M${station_x2(s) -             parseInt(t / 2)      * in_shrink}
+                         ${track_y_in(t)}
+                        L${station_x2(s) - Math.max(0, parseInt(t / 2) - 1) * in_shrink}
+                         ${track_y_in(Math.max(t % 2, t - 2))}`} />
             {/each}
         {/each}
 
         <!-- Left track connection -->
         {#each $stations.slice(1) as s, i}
-            {#each [...Array(s.n_track_in).keys()] as t_in}
-                {#each [...Array($stations[s.idx - 1].n_track_inter).keys()] as t_inter}
-                    <path class=track_connect
-                        d={`M${station_x1(s) + in_shrink}    ${track_y_in(t_in)}
-                            L${station_x1(s) - inter_shrink} ${track_y_inter(t_inter)}`} />
-                {/each}
+            <!-- Outside -->
+            <path class=track_connect
+                d={`M${station_x1(s) - inter_shrink} ${track_y_inter(0)}
+                    L${station_x1(s)               } ${track_y_in(0)}`} />
+            {#if $stations[s.idx - 1].n_track_inter > 1}
+                <path class=track_connect
+                    d={`M${station_x1(s) - inter_shrink} ${track_y_inter(1)}
+                        L${station_x1(s)               } ${track_y_in(0)}`} />
+            {/if}
+            {#if s.n_track_in > 1}
+                <path class=track_connect
+                    d={`M${station_x1(s) - inter_shrink} ${track_y_inter(0)}
+                        L${station_x1(s)               } ${track_y_in(1)}`} />
+            {/if}
+            {#if $stations[s.idx - 1].n_track_inter > 1 && s.n_track_in > 1}
+                <path class=track_connect
+                    d={`M${station_x1(s) - inter_shrink} ${track_y_inter(1)}
+                        L${station_x1(s)               } ${track_y_in(1)}`} />
+            {/if}
+            <!-- Inside -->
+            {#each [...Array(s.n_track_in).keys()] as t}
+                <path class=track_connect
+                    d={`M${station_x1(s) +             parseInt(t / 2)      * in_shrink}
+                         ${track_y_in(t)}
+                        L${station_x1(s) + Math.max(0, parseInt(t / 2) - 1) * in_shrink}
+                         ${track_y_in(Math.max(t % 2, t - 2))}`} />
             {/each}
         {/each}
 
