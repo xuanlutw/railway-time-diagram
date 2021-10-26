@@ -234,10 +234,9 @@ function comp_in_track_station (ticks: Tick[], trains: Train[], count: number[][
             if (track_assigned.length == station.n_track_in)    // No need assign conflic train
                 return;
             const remain_track = diff([...Array(station.n_track_in).keys()], track_assigned);
-            if (trains[idx].direction && remain_track.includes(0))
-                track[idx] = 0;
-            else if (!trains[idx].direction && remain_track.includes(1))
-                track[idx] = 1;
+            const prefer_track = remain_track.filter(x => x % 2 == (trains[idx].direction? 0: 1))
+            if (prefer_track.length > 0)
+                track[idx] = prefer_track[0];
             else
                 track[idx] = remain_track[0];
         })

@@ -25,8 +25,8 @@
 
     let station_x1    = (station)   => station_l * (station.idx + 1) + hm2pt(station.dist);
     let station_x2    = (station)   => station_l * (station.idx + 2) + hm2pt(station.dist);
-    let track_y_in    = (track_num) => d_in * (((track_num - track_num % 2) / 2) * ((track_num % 2)? -1: 1) - track_num % 2);
-    let track_y_inter = (track_num) => d_inter * -track_num;
+    let track_y_in    = (track_num) => d_in * (((track_num - track_num % 2) / 2) * ((track_num % 2)? 1: -1) + track_num % 2);
+    let track_y_inter = (track_num) => d_inter * track_num;
 
     function wheel_handler (event: any): void {
         event.preventDefault();
