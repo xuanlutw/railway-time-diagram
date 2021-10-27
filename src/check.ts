@@ -221,25 +221,33 @@ export function comp_in_conflict (trains: Train[], stations: Station[]): {"t1": 
     return conflicts.reduce((acc, x) => [...acc, ...x], []);
 }
 
+const diff = (arr1, arr2) => arr1.filter(x => !arr2.includes(x));
 // Follow the direction prefer 0
 function comp_in_track_station (ticks: Tick[], trains: Train[], count: number[][], station: Station): number[] {
-    let track = Array(trains.length).fill(-1);
+    let   track    = Array(trains.length).fill(-1);
+    // Compute the priority, early departature has higher priority, therefore close to the center track.
+    const priority = Array(trains.length).fill(-1).map((_, train_idx) =>
+        Math.max(...count.map((x, idx) =>
+            x.includes(train_idx)? idx: -1))
+    );
+    const order    = Array(trains.length).fill(-1).map((_, idx) => idx).sort((x, y) => priority[x] - priority[y]);
     // Assign Track
-    const diff = (arr1, arr2) => arr1.filter(x => !arr2.includes(x));
-    count.map(trains_in_idx => {
-        trains_in_idx.map((idx, n) => {
-            if (track[idx] != -1)                               // Already assign
-                return;
-            const track_assigned = trains_in_idx.map(x => track[x]).filter(x => x != -1);
-            if (track_assigned.length == station.n_track_in)    // No need assign conflic train
-                return;
-            const remain_track = diff([...Array(station.n_track_in).keys()], track_assigned);
-            const prefer_track = remain_track.filter(x => x % 2 == (trains[idx].direction? 0: 1))
-            if (prefer_track.length > 0)
-                track[idx] = prefer_track[0];
+    order.map(train_idx => {
+        const track_assigned = count.map(item => {
+            if (item.includes(train_idx)) {
+                return item.filter(x => (x != train_idx) && (track[x] != -1)).map(x => track[x]);
+            }
             else
-                track[idx] = remain_track[0];
-        })
+                return [];
+        }).reduce((acc, x) => [...acc, ...x], []).filter((v, i, a) => a.indexOf(v) === i);
+        if (track_assigned.length == station.n_track_in)    // No need assign conflic train
+            return;
+        const remain_track = diff([...Array(station.n_track_in).keys()], track_assigned);
+        const prefer_track = remain_track.filter(x => x % 2 == (trains[train_idx].direction? 0: 1));
+        if (prefer_track.length > 0)
+            track[train_idx] = prefer_track[0];
+        else
+            track[train_idx] = remain_track[0];
     });
     track = track.map((x, idx) => (x == -1)? (trains[idx].direction? 0: 1): x); // If x has no track, i.e., conflict, assign it to default.
     return track;
