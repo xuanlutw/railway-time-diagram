@@ -46,7 +46,7 @@ export class Train {
                 "dep_s":  this.dep_s,
                 "arr_s":  this.arr_s,
                 "dep_t":  this.dep_t,
-                "stop_t": this.stop_t}
+                "stop_t": this.stop_t.map((x, idx) => this.stops[idx]? x: 0}
     }
 
     flip_stop(idx: number):void {
