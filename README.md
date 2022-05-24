@@ -216,3 +216,6 @@ railway-time-diagram 支援同時設定多種預設情境。
 ```
 
 新增完畢後，可以利用瀏覽器開啟 `127.0.0.1:5000/index.html?module=name` 存取該預設情境之運行圖。
+
+##  License
+MIT
