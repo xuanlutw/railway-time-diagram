@@ -1,0 +1,137 @@
+{
+    "name": "南迴線",
+    "stations": [
+        {
+            "name":           "枋寮",
+            "dist":           0,
+            "n_track_in":     3,
+            "n_track_inter":  1,
+            "interval_cis":   12,
+            "interval_trans": 1
+        },
+        {
+            "name":           "加祿",
+            "dist":           53,
+            "n_track_in":     6,
+            "n_track_inter":  1,
+            "interval_cis":   12,
+            "interval_trans": 1
+        },
+        {
+            "name":           "內獅",
+            "dist":           87,
+            "n_track_in":     1,
+            "n_track_inter":  1,
+            "interval_cis":   12,
+            "interval_trans": 1
+        },
+        {
+            "name":           "枋山",
+            "dist":           136,
+            "n_track_in":     1,
+            "n_track_inter":  1,
+            "interval_cis":   12,
+            "interval_trans": 1
+        },
+        {
+            "name":           "枋野",
+            "dist":           205,
+            "n_track_in":     4,
+            "n_track_inter":  1,
+            "interval_cis":   12,
+            "interval_trans": 1
+        },
+        {
+            "name":           "中央號誌",
+            "dist":           246,
+            "n_track_in":     2,
+            "n_track_inter":  2,
+            "interval_cis":   12,
+            "interval_trans": 1
+        },
+        {
+            "name":           "古莊號誌",
+            "dist":           405,
+            "n_track_in":     4,
+            "n_track_inter":  1,
+            "interval_cis":   12,
+            "interval_trans": 1
+        },
+        {
+            "name":           "大武",
+            "dist":           438,
+            "n_track_in":     6,
+            "n_track_inter":  1,
+            "interval_cis":   12,
+            "interval_trans": 1
+        },
+        {
+            "name":           "瀧溪",
+            "dist":           555,
+            "n_track_in":     3,
+            "n_track_inter":  1,
+            "interval_cis":   12,
+            "interval_trans": 1
+        },
+        {
+            "name":           "金崙",
+            "dist":           639,
+            "n_track_in":     6,
+            "n_track_inter":  1,
+            "interval_cis":   12,
+            "interval_trans": 1
+        },
+        {
+            "name":           "太麻里",
+            "dist":           749,
+            "n_track_in":     5,
+            "n_track_inter":  1,
+            "interval_cis":   12,
+            "interval_trans": 1
+        },
+        {
+            "name":           "知本",
+            "dist":           866,
+            "n_track_in":     7,
+            "n_track_inter":  1,
+            "interval_cis":   12,
+            "interval_trans": 1
+        },
+        {
+            "name":           "康樂",
+            "dist":           936,
+            "n_track_in":     5,
+            "n_track_inter":  1,
+            "interval_cis":   12,
+            "interval_trans": 1
+        },
+        {
+            "name":           "臺東",
+            "dist":           982,
+            "n_track_in":     10,
+            "n_track_inter":  1,
+            "interval_cis":   12,
+            "interval_trans": 1
+        }
+    ],
+    "train_types": [
+        {
+            "name":     "特客甲",
+            "color":    "#AA0000",
+            "speed_pp": [4.16, 4.16, 4.16, 4.16, 4.16, 4.16, 4.16, 2.00, 4.16, 4.16, 4.16, 4.16, 4.16],
+            "speed_sp": [3.74, 3.74, 3.74, 3.74, 3.74, 3.74, 3.74, 2.00, 3.74, 3.74, 3.74, 3.74, 3.74],
+            "speed_ps": [3.74, 3.74, 3.74, 3.74, 3.74, 3.74, 3.74, 2.00, 3.74, 3.74, 3.74, 3.74, 3.74],
+            "speed_ss": [3.74, 3.74, 3.74, 3.74, 3.74, 3.74, 3.74, 2.00, 3.74, 3.74, 3.74, 3.74, 3.74],
+            "stop_t":   [3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3]
+        },
+        {
+            "name":     "貨甲",
+            "color":    "#00AA00",
+            "speed_pp": [3.12, 3.12, 3.12, 3.12, 3.12, 3.12, 3.12, 1.00, 3.12, 3.12, 3.12, 3.12, 3.12],
+            "speed_sp": [3, 3, 3, 3, 3, 3, 3, 1.00, 3, 3, 3, 3, 3],
+            "speed_ps": [3, 3, 3, 3, 3, 3, 3, 1.00, 3, 3, 3, 3, 3],
+            "speed_ss": [3, 3, 3, 3, 3, 3, 3, 1.00, 3, 3, 3, 3, 3],
+            "stop_t":   [20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20, 20]
+        }
+    ]
+}

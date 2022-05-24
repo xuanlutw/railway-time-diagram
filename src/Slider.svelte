@@ -2,7 +2,8 @@
     import {tick2hr, tick2min}                from "./common";
     import {show_item, tick_range, tick_simu} from "./store";
     import {Button, Icon}                     from 'sveltestrap';
-    import RangeSlider from "../../svelte-range-slider-pips/src/RangeSlider.svelte";
+    import RangeSlider from "svelte-range-slider-pips";
+    /* import RangeSlider from "../../svelte-range-slider-pips/src/RangeSlider.svelte"; */
 
     let tick_range_o = [0, 0];
     $: {
